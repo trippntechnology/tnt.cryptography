@@ -38,10 +38,9 @@ namespace TNT.Cryptography
 		/// <param name="keyPair">Public/private key pair</param>
 		/// <param name="asn1Set"><see cref="Asn1Set"/> representing the extensions that should be added to the certificate</param>
 		/// <returns>Base64 encoded string representing a CSR</returns>
-		public static string CreateCertificationRequest(string subject, AsymmetricCipherKeyPair keyPair, Asn1Set asn1Set = null)
+		public static Pkcs10CertificationRequest CreateCertificationRequest(string subject, AsymmetricCipherKeyPair keyPair, Asn1Set asn1Set = null)
 		{
-			Pkcs10CertificationRequest csr = new Pkcs10CertificationRequest(SIGNATURE_ALGORITHM, new X509Name(subject), keyPair.Public, asn1Set, keyPair.Private);
-			return csr.ToBase64();
+			return new Pkcs10CertificationRequest(SIGNATURE_ALGORITHM, new X509Name(subject), keyPair.Public, asn1Set, keyPair.Private);
 		}
 
 		/// <summary>
@@ -175,9 +174,11 @@ namespace TNT.Cryptography
 		/// <param name="expirationDate">Date when certificate expires</param>
 		/// <param name="ca">Certificate authority used to sign the certificate</param>
 		/// <returns><see cref="X509Certificate2"/> certificate</returns>
-		public static X509Certificate2 CreateCertificate(string csr, DateTime effectiveDate, DateTime expirationDate, X509Certificate2 ca)
+		public static X509Certificate2 CreateCertificate(Pkcs10CertificationRequest csr, AsymmetricCipherKeyPair keyPair, DateTime effectiveDate, DateTime expirationDate, X509Certificate2 ca = null)
 		{
-			return CreateCertificate(csr.ToPkcs10CertificationRequest(), effectiveDate, expirationDate, ca);
+			X509Certificate2 cert = CreateCertificate(csr, effectiveDate, expirationDate, ca);
+			cert.PrivateKey = TransformRSAPrivateKey((RsaPrivateCrtKeyParameters)keyPair.Private);
+			return cert;
 		}
 
 		/// <summary>
@@ -188,15 +189,31 @@ namespace TNT.Cryptography
 		/// <param name="expirationDate">Date when certificate expires</param>
 		/// <param name="ca">Certificate authority</param>
 		/// <returns><see cref="X509Certificate2"/> created from the <paramref name="csr"/> and signed by the <paramref name="ca"/></returns>
-		public static X509Certificate2 CreateCertificate(Pkcs10CertificationRequest csr, DateTime effectiveDate, DateTime expirationDate, X509Certificate2 ca)
+		public static X509Certificate2 CreateCertificate(Pkcs10CertificationRequest csr, DateTime effectiveDate, DateTime expirationDate, X509Certificate2 ca = null)
 		{
-			Org.BouncyCastle.X509.X509Certificate caCert = DotNetUtilities.FromX509Certificate(ca);
+			AsymmetricKeyParameter keyParameter = null;
 
+			if (ca != null)
+			{
+				keyParameter = TransformRSAPrivateKey((RSACryptoServiceProvider)ca.PrivateKey);
+			}
+			else
+			{
+				AsymmetricCipherKeyPair keyPair = CreateRSAKeyPair();
+				keyParameter = keyPair.Private;
+			}
 			X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
 			BigInteger serialNumber = CreateSerialNumber();
 
 			certGen.SetSerialNumber(serialNumber);
-			certGen.SetIssuerDN(caCert.SubjectDN);
+			if (ca != null)
+			{
+				certGen.SetIssuerDN(new X509Name(ca.Subject));
+			}
+			else
+			{
+				certGen.SetIssuerDN(csr.GetCertificationRequestInfo().Subject);
+			}
 			certGen.SetNotBefore(effectiveDate.ToUniversalTime());
 			certGen.SetNotAfter(expirationDate.ToUniversalTime());
 			certGen.SetSubjectDN(csr.GetCertificationRequestInfo().Subject);
@@ -225,7 +242,7 @@ namespace TNT.Cryptography
 				}
 			}
 
-			Org.BouncyCastle.X509.X509Certificate bcCert = certGen.Generate(TransformRSAPrivateKey((RSACryptoServiceProvider)ca.PrivateKey));
+			Org.BouncyCastle.X509.X509Certificate bcCert = certGen.Generate(keyParameter);
 
 			return new X509Certificate2(bcCert.GetEncoded());
 		}
