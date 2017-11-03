@@ -37,7 +37,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
+      <HintPath>..\packages\BouncyCastle.1.8.1\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Security" />
     <Reference Include="TNT.Utilities">
       <HintPath>..\packages\TNT.Utilities.1.4.272.272\lib\net45\TNT.Utilities.dll</HintPath>
     </Reference>
@@ -55,17 +59,21 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CertificateTests.cs" />
     <Compile Include="RijndaelTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="development.com.csr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TNT.Cryptography\TNT.Cryptography.csproj">
       <Project>{bbd971ec-5732-4968-a735-94d430af9bc1}</Project>
       <Name>TNT.Cryptography</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

@@ -231,29 +231,6 @@ namespace TNT.Cryptography
 			return unencryptedBytes;
 		}
 
-		/// <summary>
-		/// Encrypts unencryptedBytes and writes the encrypted bytes to file indicated by
-		/// fileName
-		/// </summary>
-		/// <param name="unencrypedBytes">Bytes to encrypt and write to disk</param>
-		/// <param name="fileName">Name of file to write</param>
-		public void EncryptAndWrite(byte[] unencrypedBytes, string fileName)
-		{
-			byte[] encryptedBytes = Encrypt(unencrypedBytes);
-			File.WriteAllBytes(fileName, encryptedBytes);
-		}
-
-		/// <summary>
-		/// Reads the file specified by fileName and decrypts the bytes
-		/// </summary>
-		/// <param name="fileName">Name of file to read</param>
-		/// <returns>Decrypted byte array</returns>
-		public byte[] ReadAndDecrypt(string fileName)
-		{
-			byte[] decryptedBytes = File.ReadAllBytes(fileName);
-			return Decrypt(decryptedBytes);
-		}
-
 		public static byte[] Serialize(object obj)
 		{
 			byte[] bytes;
