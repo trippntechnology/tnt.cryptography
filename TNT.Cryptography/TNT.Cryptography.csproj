@@ -2,6 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>2.0.0</Version>
+    <Product>TNT Cryptography Library</Product>
+    <Company>Tripp'n Technology, LLC.</Company>
+    <Copyright>Copyright Tripp'n Technology, LLC. 2019</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>D:\Steve\gitrepos\tnt.libraries\TNT.Cryptography\TNT.Cryptography\TNT.Cryptography.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
