@@ -190,7 +190,8 @@ EQA29U+T+024CAmyR67mTZWPkitrX5oqMxmZeecc7p8tQqDC3HSxTs/+rSKbj/vq
 			Assert.AreEqual("C=US, O=TNT, CN=Secondary Trust Anchor", cert.Subject);
 			Assert.AreEqual("CN=Trust Anchor, O=TNT, C=US", cert.Issuer);
 
-			Assert.AreEqual(ski.Format(false), aki.Format(false).Substring(6, 59));
+			var skiCount = ski.Format(false).Length;
+			Assert.AreEqual(ski.Format(false), aki.Format(false).Substring(6, skiCount));
 
 			File.WriteAllBytes("CSR_TA.cer", cert.Export(X509ContentType.Cert));
 			File.WriteAllBytes("CSR_TA.pfx", cert.Export(X509ContentType.Pfx, "p"));
@@ -224,7 +225,8 @@ EQA29U+T+024CAmyR67mTZWPkitrX5oqMxmZeecc7p8tQqDC3HSxTs/+rSKbj/vq
 			Assert.AreEqual("C=US, O=TNT, CN=Secondary Trust Anchor", cert.Subject);
 			Assert.AreEqual(cert.Subject, cert.Issuer);
 
-			Assert.AreEqual(ski.Format(false), aki.Format(false).Substring(6, 59));
+			var skiCount = ski.Format(false).Length;
+			Assert.AreEqual(ski.Format(false), aki.Format(false).Substring(6, skiCount));
 
 			File.WriteAllBytes("CSR_TA_SS.cer", cert.Export(X509ContentType.Cert));
 			File.WriteAllBytes("CSR_TA_SS.pfx", cert.Export(X509ContentType.Pfx, "P"));
@@ -366,7 +368,8 @@ EQA29U+T+024CAmyR67mTZWPkitrX5oqMxmZeecc7p8tQqDC3HSxTs/+rSKbj/vq
 			Assert.AreEqual("C=US, O=TNT, CN=local@domain.com", cert.Issuer);
 			Assert.AreEqual("C=US, O=TNT, CN=local@domain.com", cert.Subject);
 
-			Assert.AreEqual(ski.Format(false), aki.Format(false).Substring(6, 59));
+			var skiCount = ski.Format(false).Length;
+			Assert.AreEqual(ski.Format(false), aki.Format(false).Substring(6, skiCount));
 
 			File.WriteAllBytes("CSR_SelfSigned_AddressBound.cer", cert.Export(X509ContentType.Cert));
 		}
@@ -396,7 +399,8 @@ EQA29U+T+024CAmyR67mTZWPkitrX5oqMxmZeecc7p8tQqDC3HSxTs/+rSKbj/vq
 			Assert.AreEqual("CN=Trust Anchor, O=TNT, C=US", cert.Issuer);
 			Assert.AreEqual("C=US, O=TNT, CN=local@domain.com", cert.Subject);
 
-			Assert.AreEqual(ski.Format(false), aki.Format(false).Substring(6, 59));
+			var skiCount = ski.Format(false).Length;
+			Assert.AreEqual(ski.Format(false), aki.Format(false).Substring(6, skiCount));
 
 			File.WriteAllBytes("CSR_AddressBound.cer", cert.Export(X509ContentType.Cert));
 		}
