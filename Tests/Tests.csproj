@@ -43,8 +43,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Security" />
-    <Reference Include="TNT.Utilities">
-      <HintPath>..\packages\TNT.Utilities.1.4.272.272\lib\net45\TNT.Utilities.dll</HintPath>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="TNT.Utilities, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TNT.Utilities.1.7.0\lib\net462\TNT.Utilities.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Choose>
@@ -63,6 +64,7 @@
     <Compile Include="CertificateTests.cs" />
     <Compile Include="RijndaelTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="AsymmetricTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="development.com.csr">
