@@ -25,6 +25,11 @@ namespace TNT.Cryptography
 		public byte[] IV { get; protected set; }
 
 		/// <summary>
+		/// Gets a <see cref="KeyPair"/> representing the <see cref="Key"/> and <see cref="IV"/>
+		/// </summary>
+		public KeyPair KeyPair => new KeyPair(Convert.ToBase64String(Key), Convert.ToBase64String(IV));
+
+		/// <summary>
 		/// Encryptor member
 		/// </summary>
 		protected ICryptoTransform m_Encryptor;
@@ -63,7 +68,7 @@ namespace TNT.Cryptography
 		/// shorter keys. (Default: Bits256)
 		/// </param>
 		/// <exception cref="ArgumentException">When <paramref name="initVector"/> is not the correct length</exception>
-		public Symmetric(string password, string salt, string initVector, Enumerations.HashAlgorithm hashAlgorithm = Enumerations.HashAlgorithm.SHA1, 
+		public Symmetric(string password, string salt, string initVector, Enumerations.HashAlgorithm hashAlgorithm = Enumerations.HashAlgorithm.SHA1,
 										int iterations = 2, Enumerations.KeySize keySize = Enumerations.KeySize.Bits256)
 		{
 			if (initVector.Length != 16) throw new ArgumentException("Parameter, initVector, must be 16 characters");

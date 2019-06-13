@@ -87,6 +87,17 @@ namespace Tests
 			}
 		}
 
+		[TestMethod]
+		public void Constructor_KeyPair_AreEqual()
+		{
+			var sut = new Symmetric(Token.Create(10), Token.Create(10), Token.Create(16));
+			var key = sut.Key;
+			var iv = sut.IV;
+			var keyPair = sut.KeyPair;
+
+			Assert.AreEqual(Convert.ToBase64String(key), keyPair.Key);
+			Assert.AreEqual(Convert.ToBase64String(iv), keyPair.IV);
+		}
 
 		private static string EncryptDecrypt(Symmetric rijndael, string plainText)
 		{
