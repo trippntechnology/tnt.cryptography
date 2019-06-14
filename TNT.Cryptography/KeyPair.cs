@@ -16,6 +16,11 @@
 		public string IV { get; set; }
 
 		/// <summary>
+		/// Parameterless constructor provided for serialization
+		/// </summary>
+		public KeyPair() { }
+
+		/// <summary>
 		/// Initializes a <see cref="KeyPair"/>
 		/// </summary>
 		/// <param name="key">Key represented as base 64</param>
