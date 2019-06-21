@@ -1,16 +1,15 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Encrypt")]
-[assembly: AssemblyDescription("Asymmetric plain text file encryptor")]
+[assembly: AssemblyTitle("Crypto")]
+[assembly: AssemblyDescription("Cryptography Utility")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Tripp'n Technology, LLC.")]
-[assembly: AssemblyProduct("Encrypt")]
-[assembly: AssemblyCopyright("Copyright © Tripp'n Technology, LLC. 2019")]
+[assembly: AssemblyProduct("Crypto")]
+[assembly: AssemblyCopyright("Copyright Tripp'n Technology, LLC.2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("a6849f5d-beab-4c77-991a-1f533ba60c93")]
+[assembly: Guid("5bdcba16-b223-4785-b31f-3b17a7748012")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,5 +31,7 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.0.42")]
+[assembly: AssemblyFileVersion("1.0.0.42")]
+
+[assembly: AssemblyInformationalVersion("1.0.42")]

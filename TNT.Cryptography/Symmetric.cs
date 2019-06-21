@@ -27,7 +27,7 @@ namespace TNT.Cryptography
 		/// <summary>
 		/// Gets a <see cref="KeyPair"/> representing the <see cref="Key"/> and <see cref="IV"/>
 		/// </summary>
-		public KeyPair KeyPair => new KeyPair(Convert.ToBase64String(Key), Convert.ToBase64String(IV));
+		public SymmetricKey KeyPair => new SymmetricKey(Convert.ToBase64String(Key), Convert.ToBase64String(IV));
 
 		/// <summary>
 		/// Encryptor member
@@ -68,7 +68,7 @@ namespace TNT.Cryptography
 		/// shorter keys. (Default: Bits256)
 		/// </param>
 		/// <exception cref="ArgumentException">When <paramref name="initVector"/> is not the correct length</exception>
-		public Symmetric(string password, string salt, string initVector, Enumerations.HashAlgorithm hashAlgorithm = Enumerations.HashAlgorithm.SHA1,
+		public static SymmetricKey GenerateKey(string password, string salt, string initVector, Enumerations.HashAlgorithm hashAlgorithm = Enumerations.HashAlgorithm.SHA1,
 										int iterations = 2, Enumerations.KeySize keySize = Enumerations.KeySize.Bits256)
 		{
 			if (initVector.Length != 16) throw new ArgumentException("Parameter, initVector, must be 16 characters");
@@ -87,7 +87,16 @@ namespace TNT.Cryptography
 			// Convert strings into byte arrays. Assumes that strings only contain ASCII codes.
 			var iv = Encoding.ASCII.GetBytes(initVector);
 
-			Initialize(key, iv);
+			return new SymmetricKey(key, iv);
+		}
+
+		/// <summary>
+		/// Initializes a <see cref="Symmetric"/> with a <see cref="SymmetricKey"/>
+		/// </summary>
+		/// <param name="key"><see cref="SymmetricKey"/> that should be used to initialize <see cref="Symmetric"/></param>
+		public Symmetric(SymmetricKey key)
+		{
+			Initialize(Convert.FromBase64String(key.Key), Convert.FromBase64String(key.IV));
 		}
 
 		/// <summary>
@@ -166,6 +175,13 @@ namespace TNT.Cryptography
 			// return encrypted bytes
 			return cipherTextBytes;
 		}
+
+		/// <summary>
+		/// Decrypts a base64 encoded string and returns the decrypted string 
+		/// </summary>
+		/// <param name="base64Cypher">Base64 cypher text to decrypt</param>
+		/// <returns>Decrypted text from <paramref name="base64Cypher"/></returns>
+		public string Decrypt(string base64Cypher) => Deserialize<string>(Decrypt(Convert.FromBase64String(base64Cypher)));
 
 		/// <summary>
 		/// Decrypts specified cipherBytes using Rijndael symmetric key algorithm.

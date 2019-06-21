@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using TNT.Cryptography;
+using TNT.Cryptography.Enumerations;
 using TNT.Utilities;
 
 namespace Tests
@@ -9,45 +10,59 @@ namespace Tests
 	public class SymmetricTests
 	{
 		string plainText = @"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean in est et ex facilisis tincidunt vitae in urna. Aenean sed dolor eget arcu varius rutrum. Proin eget justo placerat, porttitor turpis ac, scelerisque augue. Donec eget commodo nulla, vel mattis eros. Curabitur pretium eros sed commodo ultricies. Quisque cursus eget orci et cursus. In pellentesque imperdiet dolor, vel cursus neque dignissim quis.";
+		static SymmetricKey symmetricKey = null;
+
+		[ClassInitialize]
+		public static void ClassInitialize(TestContext tc)
+		{
+			symmetricKey = Symmetric.GenerateKey(Token.Create(10), Token.Create(4), Token.Create(16));
+		}
 
 		[TestMethod]
-		public void Constructor1()
+		public void GenerateKey_Defaults()
 		{
-			Symmetric rijndael = new Symmetric(Token.Create(10), Token.Create(4), Token.Create(16));
-			string decryptedString = EncryptDecrypt(rijndael, plainText);
+			var key = Symmetric.GenerateKey(Token.Create(10), Token.Create(4), Token.Create(16));
+			string decryptedString = EncryptDecrypt(key, plainText);
 			Assert.AreEqual(plainText, decryptedString);
 		}
 
 		[TestMethod]
-		public void Constructor2()
+		public void GenerateKey_MD5()
 		{
-			Symmetric rijndael1 = new Symmetric(Token.Create(10), Token.Create(4), Token.Create(16));
-			Symmetric rijndael2 = new Symmetric(rijndael1.Key, rijndael1.IV);
-			string decryptedString = EncryptDecrypt(rijndael2, plainText);
+			var key = Symmetric.GenerateKey(Token.Create(10), Token.Create(4), Token.Create(16), TNT.Cryptography.Enumerations.HashAlgorithm.MD5);
+			string decryptedString = EncryptDecrypt(key, plainText);
 			Assert.AreEqual(plainText, decryptedString);
 		}
 
 		[TestMethod]
-		public void Constructor3()
+		public void GenerateKey_KeySize128()
 		{
-			Symmetric rijndael = new Symmetric(Token.Create(10), Token.Create(4), Token.Create(16), TNT.Cryptography.Enumerations.HashAlgorithm.SHA1);
-			string decryptedString = EncryptDecrypt(rijndael, plainText);
+			var key = Symmetric.GenerateKey(Token.Create(10), Token.Create(4), Token.Create(16), keySize: KeySize.Bits128);
+			string decryptedString = EncryptDecrypt(key, plainText);
 			Assert.AreEqual(plainText, decryptedString);
 		}
 
 		[TestMethod]
-		public void Constructor4()
+		public void GenerateKey_KeySize192()
 		{
-			Symmetric rijndael = new Symmetric(Token.Create(10), Token.Create(4), Token.Create(16), TNT.Cryptography.Enumerations.HashAlgorithm.SHA1, 10);
-			string decryptedString = EncryptDecrypt(rijndael, plainText);
+			var key = Symmetric.GenerateKey(Token.Create(10), Token.Create(4), Token.Create(16), keySize: KeySize.Bits192);
+			string decryptedString = EncryptDecrypt(key, plainText);
 			Assert.AreEqual(plainText, decryptedString);
 		}
 
 		[TestMethod]
-		public void Constructor5()
+		public void Constructor_SymmtricKey()
 		{
-			Symmetric rijndael = new Symmetric(Token.Create(10), Token.Create(4), Token.Create(16), TNT.Cryptography.Enumerations.HashAlgorithm.SHA1, 10, TNT.Cryptography.Enumerations.KeySize.Bits128);
-			string decryptedString = EncryptDecrypt(rijndael, plainText);
+			Symmetric symmetric = new Symmetric(symmetricKey);
+			string decryptedString = EncryptDecrypt(symmetric, plainText);
+			Assert.AreEqual(plainText, decryptedString);
+		}
+
+		[TestMethod]
+		public void Constructor_Key_IV_Bytes()
+		{
+			Symmetric symmetric = new Symmetric(Convert.FromBase64String(symmetricKey.Key), Convert.FromBase64String(symmetricKey.IV));
+			string decryptedString = EncryptDecrypt(symmetric, plainText);
 			Assert.AreEqual(plainText, decryptedString);
 		}
 
@@ -63,22 +78,19 @@ namespace Tests
 		[TestMethod]
 		public void Constructor_Rijndael_Same_Key_IV()
 		{
-			var password = Token.Create(10);
-			var salt = Token.Create(4);
-			var iv = Token.Create(16);
-			var sut1 = new Symmetric(password, salt, iv);
-			var sut2 = new Symmetric(password, salt, iv);
+			var sut1 = new Symmetric(symmetricKey);
+			var sut2 = new Symmetric(symmetricKey);
 			CollectionAssert.AreEqual(sut1.Key, sut2.Key);
 			CollectionAssert.AreEqual(sut1.IV, sut2.IV);
 		}
 
 		[ExpectedException(typeof(ArgumentException))]
 		[TestMethod]
-		public void Constructor_Invalid_IV_Throws_exception()
+		public void GenerateKey_Invalid_IV_Throws_exception()
 		{
 			try
 			{
-				new Symmetric(Token.Create(10), Token.Create(4), Token.Create(15));
+				Symmetric.GenerateKey(Token.Create(10), Token.Create(4), Token.Create(15));
 			}
 			catch (Exception ex)
 			{
@@ -90,7 +102,7 @@ namespace Tests
 		[TestMethod]
 		public void Constructor_KeyPair_AreEqual()
 		{
-			var sut = new Symmetric(Token.Create(10), Token.Create(10), Token.Create(16));
+			var sut = new Symmetric(symmetricKey);
 			var key = sut.Key;
 			var iv = sut.IV;
 			var keyPair = sut.KeyPair;
@@ -99,11 +111,22 @@ namespace Tests
 			Assert.AreEqual(Convert.ToBase64String(iv), keyPair.IV);
 		}
 
+		[TestMethod]
+		public void EncryptDecryptString()
+		{
+			var symmetric = new Symmetric(symmetricKey);
+			var cypherText = symmetric.Encrypt(plainText);
+			var decryptedText = symmetric.Decrypt(Convert.ToBase64String(cypherText));
+			Assert.AreEqual(plainText, decryptedText);
+		}
+
 		private static string EncryptDecrypt(Symmetric rijndael, string plainText)
 		{
 			byte[] cypher = rijndael.Encrypt(plainText);
 			byte[] decryptedBytes = rijndael.Decrypt(cypher);
 			return Symmetric.Deserialize<string>(decryptedBytes);
 		}
+
+		private static string EncryptDecrypt(SymmetricKey key, string plainText) => EncryptDecrypt(new Symmetric(key), plainText);
 	}
 }
