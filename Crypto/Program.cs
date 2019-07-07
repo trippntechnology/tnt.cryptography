@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Xml.Linq;
 using TNT.Cryptography;
 using TNT.Utilities;
 
@@ -31,34 +30,29 @@ namespace Crypto
 
 		private static void KeyGen(Arguments args)
 		{
-			var symmetric = new Symmetric(Symmetric.GenerateKey(Token.Create(16), Token.Create(4), Token.Create(16)));
-			var keyPair = symmetric.KeyPair;
-			var fileText = TNT.Utilities.Utilities.Serialize<SymmetricKey>(keyPair, null);
-			var fileXml = XDocument.Parse(fileText);
-			fileXml.Save(args.OutputFile);
+			var key = Symmetric.GenerateKey(args.PasswordKey, Token.Create(4));
+			var fileText = Convert.ToBase64String(key);
+			File.WriteAllText(args.OutputFile, fileText);
 		}
 
 		private static void Encrypt(Arguments args)
 		{
-			var symmetric = LoadSymmetric(args.KeyFile);
+			var key = File.ReadAllText(args.KeyFile);
+			var iv = Symmetric.GenerateIV(args.InitVector);
+			var symmetric = new Symmetric(Convert.FromBase64String(key));
 			var plainText = File.ReadAllText(args.InputFile);
-			var cypherText = symmetric.Encrypt(plainText);
-			File.WriteAllText(args.OutputFile, Convert.ToBase64String(cypherText));
+			var cipher = symmetric.Encrypt(plainText, iv);
+			File.WriteAllText(args.OutputFile, Convert.ToBase64String(cipher.ToBytes()));
 		}
 
 		private static void Decrypt(Arguments args)
 		{
-			var symmetric = LoadSymmetric(args.KeyFile);
-			var cypherText = File.ReadAllText(args.InputFile);
-			var plainText = symmetric.Decrypt(cypherText);
+			var key = File.ReadAllText(args.KeyFile);
+			var iv = Symmetric.GenerateIV(args.InitVector);
+			var symmetric = new Symmetric(key);
+			var cipher = File.ReadAllText(args.InputFile);
+			var plainText = symmetric.Decrypt(cipher, iv);
 			File.WriteAllText(args.OutputFile, plainText);
-		}
-
-		private static Symmetric LoadSymmetric(string fileName)
-		{
-			var keyFile = XDocument.Load(fileName);
-			var symmetricKey = Utilities.Deserialize<SymmetricKey>(keyFile.ToString(), new Type[0]);
-			return new Symmetric(symmetricKey);
 		}
 	}
 }
