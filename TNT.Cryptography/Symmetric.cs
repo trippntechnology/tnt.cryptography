@@ -14,35 +14,45 @@ namespace TNT.Cryptography
 	/// </summary>	
 	public class Symmetric
 	{
+		private RijndaelManaged Rijndael = null;
+
 		/// <summary>
 		/// The key
 		/// </summary>
 		public byte[] Key { get; protected set; }
 
-		/// <summary>
-		/// The initialization vector
-		/// </summary>
-		public byte[] IV { get; protected set; }
-
-		/// <summary>
-		/// Gets a <see cref="KeyPair"/> representing the <see cref="Key"/> and <see cref="IV"/>
-		/// </summary>
-		public SymmetricKey KeyPair => new SymmetricKey(Convert.ToBase64String(Key), Convert.ToBase64String(IV));
-
-		/// <summary>
-		/// Encryptor member
-		/// </summary>
-		protected ICryptoTransform m_Encryptor;
-
-		/// <summary>
-		/// Decryptor member
-		/// </summary>
-		protected ICryptoTransform m_Decryptor;
-
 		#region Constructors
 
 		/// <summary>
-		/// Constructor. Initializes class to provide encryption/decryption functionality
+		/// Initializes a <see cref="Symmetric"/> with a key represented as a <see cref="byte"/> array
+		/// </summary>
+		/// <param name="key">Rijndael key</param>
+		public Symmetric(byte[] key)
+		{
+			this.Key = key;
+
+			// Create uninitialized Rijndael encryption object.
+			Rijndael = new RijndaelManaged
+			{
+				// It is reasonable to set encryption mode to Cipher Block Chaining (CBC). Use default 
+				// options for other symmetric key parameters.
+				Mode = CipherMode.CBC
+			};
+		}
+
+		/// <summary>
+		/// Initializes a <see cref="Symmetric"/> with a key represented as a base 64 encoded <see cref="string"/>
+		/// </summary>
+		/// <param name="key">Rijndael base 64 encoded <see cref="string"/></param>
+		public Symmetric(string key)
+			: this(Convert.FromBase64String(key))
+		{
+		}
+
+		#endregion
+
+		/// <summary>
+		/// Generates a Rijndael key
 		/// </summary>
 		/// <param name="password">
 		/// Passphrase from which a pseudo-random password will be derived. The derived password will be used 
@@ -51,10 +61,6 @@ namespace TNT.Cryptography
 		/// <param name="salt">
 		/// Salt value used along with passphrase to generate password. Salt can be any string. In this example 
 		/// we assume that salt is an ASCII string.
-		/// </param>
-		/// <param name="initVector">
-		/// Initialization vector (or IV). This value is required to encrypt the first block of plaintext data. 
-		/// For RijndaelManaged class IV must be exactly 16 ASCII characters long.
 		/// </param>
 		/// <param name="hashAlgorithm">
 		/// Hash algorithm used to generate password. Allowed values are: "MD5" and "SHA1". SHA1 hashes are a bit 
@@ -67,12 +73,10 @@ namespace TNT.Cryptography
 		/// Size of encryption key in bits. Allowed values are: 128, 192, and 256. Longer keys are more secure than 
 		/// shorter keys. (Default: Bits256)
 		/// </param>
-		/// <exception cref="ArgumentException">When <paramref name="initVector"/> is not the correct length</exception>
-		public static SymmetricKey GenerateKey(string password, string salt, string initVector, Enumerations.HashAlgorithm hashAlgorithm = Enumerations.HashAlgorithm.SHA1,
+		/// <returns><see cref="byte"/> array representing the key</returns>
+		public static byte[] GenerateKey(string password, string salt, Enumerations.HashAlgorithm hashAlgorithm = Enumerations.HashAlgorithm.SHA1,
 										int iterations = 2, Enumerations.KeySize keySize = Enumerations.KeySize.Bits256)
 		{
-			if (initVector.Length != 16) throw new ArgumentException("Parameter, initVector, must be 16 characters");
-
 			byte[] saltValueBytes = Encoding.ASCII.GetBytes(salt);
 
 			// First, create a password, from which the key will be derived. This password will be generated from the 
@@ -82,138 +86,115 @@ namespace TNT.Cryptography
 
 			// Use the password to generate pseudo-random bytes for the encryption key. Specify the size of the key 
 			// in bytes (instead of bits).
-			var key = passwordBytes.GetBytes((int)keySize / 8);
-
-			// Convert strings into byte arrays. Assumes that strings only contain ASCII codes.
-			var iv = Encoding.ASCII.GetBytes(initVector);
-
-			return new SymmetricKey(key, iv);
+			return passwordBytes.GetBytes((int)keySize / 8);
 		}
 
 		/// <summary>
-		/// Initializes a <see cref="Symmetric"/> with a <see cref="SymmetricKey"/>
+		/// Creates an initialization vector from <paramref name="initVector"/>
 		/// </summary>
-		/// <param name="key"><see cref="SymmetricKey"/> that should be used to initialize <see cref="Symmetric"/></param>
-		public Symmetric(SymmetricKey key)
+		/// <param name="initVector">Initialization vector (or IV). This value is required to encrypt the 
+		/// first block of plaintext data. For RijndaelManaged class IV must be exactly 16 ASCII characters long.
+		/// </param>
+		/// <param name="enforceRijndael">When true, enforces 16 ASCII characters restriction</param>
+		/// <returns><see cref="byte"/> array representing the IV</returns>
+		/// <exception cref="ArgumentException">Thrown when <paramref name="enforceRijndael"/>is true and 
+		/// <paramref name="initVector"/> is not 16 characters long</exception>
+		public static byte[] GenerateIV(string initVector, bool enforceRijndael = true)
 		{
-			Initialize(Convert.FromBase64String(key.Key), Convert.FromBase64String(key.IV));
+			if (initVector.Length != 16) throw new ArgumentException("Parameter, initVector, must be 16 characters");
+			return Encoding.ASCII.GetBytes(initVector);
 		}
-
-		/// <summary>
-		/// Constructor. Initializes class to provide encryption/decryption functionality
-		/// </summary>
-		/// <param name="keyBytes">Bytes that represent a previously generated <see cref="Key"/></param>
-		/// <param name="initVectorBytes">Bytes that represent a previously generated initialization vector</param>
-		public Symmetric(byte[] keyBytes, byte[] initVectorBytes)
-		{
-			Initialize(keyBytes, initVectorBytes);
-		}
-
-		/// <summary>
-		/// Initializes the <see cref="Key"/> and <see cref="IV"/> with the <paramref name="keyBytes"/> and
-		/// <paramref name="initVectorBytes"/> respectively which are used to generate the encryptor and decryptor.
-		/// </summary>
-		/// <param name="keyBytes">Bytes that represent the <see cref="Key"/></param>
-		/// <param name="initVectorBytes">Bytes that represent the <see cref="IV"/></param>
-		private void Initialize(byte[] keyBytes, byte[] initVectorBytes)
-		{
-			this.Key = keyBytes;
-			this.IV = initVectorBytes;
-
-			// Create uninitialized Rijndael encryption object.
-			RijndaelManaged symmetricKey = new RijndaelManaged();
-
-			// It is reasonable to set encryption mode to Cipher Block Chaining (CBC). Use default 
-			// options for other symmetric key parameters.
-			symmetricKey.Mode = CipherMode.CBC;
-
-			// Generate encryptor from the existing key bytes and initialization vector. Key size 
-			// will be defined based on the number of the key bytes.
-			m_Encryptor = symmetricKey.CreateEncryptor(this.Key, this.IV);
-
-			// Generate decryptor from the existing key bytes and initialization vector. Key size 
-			// will be defined based on the number of the key bytes.
-			m_Decryptor = symmetricKey.CreateDecryptor(this.Key, this.IV);
-		}
-
-		#endregion
 
 		/// <summary>
 		/// Encrypts a <see cref="string"/>
 		/// </summary>
 		/// <param name="unencryptedString"><see cref="string"/> to be encrypted</param>
-		/// <returns><see cref="byte"/> array that represents the encrypted <see cref="string"/> <paramref name="unencryptedString"/></returns>
-		public byte[] Encrypt(string unencryptedString) => Encrypt(Serialize(unencryptedString));
+		/// <param name="iv"><see cref="byte"/> array representing the initialization vector</param>
+		/// <returns>A <see cref="Cipher"/> the encrypted <paramref name="unencryptedString"/></returns>
+		public Cipher Encrypt(string unencryptedString, byte[] iv) => Encrypt(Serialize(unencryptedString), iv);
 
 		/// <summary>
-		/// Encrypts specified unencrypted bytes using Rijndael symmetric key algorithm and returns a 
-		/// an encrypted byte array.
+		/// Encrypts <see cref=""/> using Rijndael symmetric key algorithm
 		/// </summary>
-		/// <param name="unencryptedBytes">Unencrypted bytes to be encrypted.</param>
-		/// <returns>Encrypted bytes</returns>
-		public byte[] Encrypt(byte[] unencryptedBytes)
+		/// <param name="plainBytes">Unencrypted bytes to be encrypted.</param>
+		/// <returns>A <see cref="Cipher"/> that represents the encrypted <paramref name="plainBytes"/></returns>
+		public Cipher Encrypt(byte[] plainBytes, byte[] iv)
 		{
-			byte[] cipherTextBytes;
+			byte[] cipherBytes;
 
 			// Define memory stream which will be used to hold encrypted data.
 			using (MemoryStream memoryStream = new MemoryStream())
 			{
-				// Define cryptographic stream (always use Write mode for encryption).
-				using (CryptoStream cryptoStream = new CryptoStream(memoryStream, m_Encryptor, CryptoStreamMode.Write))
+				using (var encryptor = Rijndael.CreateEncryptor(Key, iv))
 				{
-					// Start encrypting.
-					cryptoStream.Write(unencryptedBytes, 0, unencryptedBytes.Length);
+					// Define cryptographic stream (always use Write mode for encryption).
+					using (CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+					{
+						// Start encrypting.
+						cryptoStream.Write(plainBytes, 0, plainBytes.Length);
 
-					// Finish encrypting.
-					cryptoStream.FlushFinalBlock();
+						// Finish encrypting.
+						cryptoStream.FlushFinalBlock();
 
-					// Convert our encrypted data from a memory stream into a byte array.
-					cipherTextBytes = memoryStream.ToArray();
+						// Convert our encrypted data from a memory stream into a byte array.
+						cipherBytes = memoryStream.ToArray();
+					}
 				}
 			}
 
 			// return encrypted bytes
-			return cipherTextBytes;
+			return new Cipher(cipherBytes) { IV = iv };
 		}
 
 		/// <summary>
 		/// Decrypts a base64 encoded string and returns the decrypted string 
 		/// </summary>
 		/// <param name="base64Cypher">Base64 cypher text to decrypt</param>
+		/// <param name="iv">Initialization vector</param>
 		/// <returns>Decrypted text from <paramref name="base64Cypher"/></returns>
-		public string Decrypt(string base64Cypher) => Deserialize<string>(Decrypt(Convert.FromBase64String(base64Cypher)));
+		public string Decrypt(string base64Cypher, byte[] iv) => Deserialize<string>(Decrypt(new Cipher(Convert.FromBase64String(base64Cypher)) { IV = iv }));
 
 		/// <summary>
-		/// Decrypts specified cipherBytes using Rijndael symmetric key algorithm.
+		/// Decrypts content represented by <paramref name="cipher"/> using Rijndael symmetric key algorithm.
 		/// </summary>
-		/// <param name="cipherBytes">Encrypted byte array</param>
+		/// <param name="cipher"><see cref="Cipher"/> that contains the encrypted content</param>
+		/// <param name="initVector">Optional initialization vector. If an IV is provided in <paramref name="cipher"/>
+		/// that IV will be used.</param>
 		/// <returns>Decrypted byte array</returns>
 		/// <remarks>
 		/// Most of the logic in this function is similar to the Encrypt logic. In order for decryption 
 		/// to work, all parameters of this function - except cipherText value - must match the corresponding 
 		/// parameters of the Encrypt function which was called to generate the ciphertext.
 		/// </remarks>
-		public byte[] Decrypt(byte[] cipherBytes)
+		/// <exception cref="ArgumentException">Thrown if an IV is not supplied either in the <paramref name="cipher"/> or 
+		/// <paramref name="initVector"/></exception>
+		public byte[] Decrypt(Cipher cipher, byte[] initVector = null)
 		{
-			byte[] unencryptedBytes;
+			byte[] plainBytes;
+			var iv = cipher.IV ?? initVector;
+
+			if (iv == null) throw new ArgumentException("Initialization vector must be supplied");
 
 			// Define memory stream which will be used to hold encrypted data.
-			using (MemoryStream memoryStream = new MemoryStream(cipherBytes))
+			using (MemoryStream memoryStream = new MemoryStream(cipher.EncryptedContent))
 			{
-				// Define cryptographic stream (always use Read mode for encryption).
-				using (CryptoStream cryptoStream = new CryptoStream(memoryStream, m_Decryptor, CryptoStreamMode.Read))
+				using (var decryptor = Rijndael.CreateDecryptor(this.Key, iv))
 				{
-					// Since at this point we don't know what the size of decrypted data will be, allocate the buffer 
-					// long enough to hold ciphertext. Plaintext is never longer than ciphertext.
-					unencryptedBytes = new byte[cipherBytes.Length];
+					// Define cryptographic stream (always use Read mode for encryption).
+					using (CryptoStream cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
+					{
+						// Since at this point we don't know what the size of decrypted data will be, allocate the buffer 
+						// long enough to hold ciphertext. Plaintext is never longer than ciphertext.
+						plainBytes = new byte[cipher.EncryptedContent.Length];
 
-					// Start decrypting.
-					int decryptedByteCount = cryptoStream.Read(unencryptedBytes, 0, unencryptedBytes.Length);
+						// Start decrypting.
+						int decryptedByteCount = cryptoStream.Read(plainBytes, 0, plainBytes.Length);
+					}
 				}
 			}
 
 			// Return decrypted string.   
-			return unencryptedBytes;
+			return plainBytes;
 		}
 
 		/// <summary>

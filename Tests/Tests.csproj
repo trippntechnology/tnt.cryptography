@@ -59,6 +59,7 @@
     <Compile Include="SymmetricTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AsymmetricTests.cs" />
+    <Compile Include="CipherTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="development.com.csr">

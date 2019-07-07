@@ -10,60 +10,78 @@ namespace Tests
 	public class SymmetricTests
 	{
 		string plainText = @"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean in est et ex facilisis tincidunt vitae in urna. Aenean sed dolor eget arcu varius rutrum. Proin eget justo placerat, porttitor turpis ac, scelerisque augue. Donec eget commodo nulla, vel mattis eros. Curabitur pretium eros sed commodo ultricies. Quisque cursus eget orci et cursus. In pellentesque imperdiet dolor, vel cursus neque dignissim quis.";
-		static SymmetricKey symmetricKey = null;
+		byte[] key = Symmetric.GenerateKey(Token.Create(10), Token.Create(4));
+		byte[] iv = Symmetric.GenerateIV(Token.Create(16));
 
-		[ClassInitialize]
-		public static void ClassInitialize(TestContext tc)
+		[TestMethod]
+		public void Constructor_WithByteArray()
 		{
-			symmetricKey = Symmetric.GenerateKey(Token.Create(10), Token.Create(4), Token.Create(16));
+			var key = Symmetric.GenerateKey("Constructor_WithByteArray", "salt");
+			var sut = new Symmetric(key);
+			Assert.AreEqual(key, sut.Key);
+		}
+
+		[TestMethod]
+		public void Constructor_WithBase64String()
+		{
+			var key = Convert.ToBase64String(Symmetric.GenerateKey("Constructor_WithByteArray", "salt"));
+			var sut = new Symmetric(key);
+			Assert.AreEqual(key, Convert.ToBase64String(sut.Key));
 		}
 
 		[TestMethod]
 		public void GenerateKey_Defaults()
 		{
-			var key = Symmetric.GenerateKey(Token.Create(10), Token.Create(4), Token.Create(16));
-			string decryptedString = EncryptDecrypt(key, plainText);
-			Assert.AreEqual(plainText, decryptedString);
+			var key = Symmetric.GenerateKey("GenerateKey_Defaults", "salt");
+			var keyB64 = Convert.ToBase64String(key);
+			Assert.AreEqual("XMIqI9XOfHYsg0+y7vtLvGReLaWs1z6QwM+9faMjSXw=", keyB64);
 		}
 
 		[TestMethod]
 		public void GenerateKey_MD5()
 		{
-			var key = Symmetric.GenerateKey(Token.Create(10), Token.Create(4), Token.Create(16), TNT.Cryptography.Enumerations.HashAlgorithm.MD5);
-			string decryptedString = EncryptDecrypt(key, plainText);
-			Assert.AreEqual(plainText, decryptedString);
+			var key = Symmetric.GenerateKey("GenerateKey_MD5", "salt", TNT.Cryptography.Enumerations.HashAlgorithm.MD5);
+			var keyB64 = Convert.ToBase64String(key);
+			Assert.AreEqual("oaVJMDQueZox8TP9E9Wrz0Fwxquezw3Sw7JjmdRIBHs=", keyB64);
 		}
 
 		[TestMethod]
 		public void GenerateKey_KeySize128()
 		{
-			var key = Symmetric.GenerateKey(Token.Create(10), Token.Create(4), Token.Create(16), keySize: KeySize.Bits128);
-			string decryptedString = EncryptDecrypt(key, plainText);
-			Assert.AreEqual(plainText, decryptedString);
+			var key = Symmetric.GenerateKey("GenerateKey_KeySize128", "salt", keySize: KeySize.Bits128);
+			var keyB64 = Convert.ToBase64String(key);
+			Assert.AreEqual("MPkpMHyGEYhK9ymWaVSMfg==", keyB64);
 		}
 
 		[TestMethod]
 		public void GenerateKey_KeySize192()
 		{
-			var key = Symmetric.GenerateKey(Token.Create(10), Token.Create(4), Token.Create(16), keySize: KeySize.Bits192);
-			string decryptedString = EncryptDecrypt(key, plainText);
-			Assert.AreEqual(plainText, decryptedString);
+			var key = Symmetric.GenerateKey("GenerateKey_KeySize192", "salt", keySize: KeySize.Bits192);
+			var keyB64 = Convert.ToBase64String(key);
+			Assert.AreEqual("eJmnbYPLuu1cUx4WRfUgH/PXzhQI7NLp", keyB64);
 		}
 
 		[TestMethod]
-		public void Constructor_SymmtricKey()
+		public void GenerateIV_Defaults()
 		{
-			Symmetric symmetric = new Symmetric(symmetricKey);
-			string decryptedString = EncryptDecrypt(symmetric, plainText);
-			Assert.AreEqual(plainText, decryptedString);
+			var iv = Symmetric.GenerateIV("GenerateIV_Defau");
+			var ivB64 = Convert.ToBase64String(iv);
+			Assert.AreEqual("R2VuZXJhdGVJVl9EZWZhdQ==", ivB64);
 		}
 
+		[ExpectedException(typeof(ArgumentException))]
 		[TestMethod]
-		public void Constructor_Key_IV_Bytes()
+		public void GenerateIV_ShortInitVector()
 		{
-			Symmetric symmetric = new Symmetric(Convert.FromBase64String(symmetricKey.Key), Convert.FromBase64String(symmetricKey.IV));
-			string decryptedString = EncryptDecrypt(symmetric, plainText);
-			Assert.AreEqual(plainText, decryptedString);
+			try
+			{
+				var iv = Symmetric.GenerateIV("GenerateIV_Defa");
+			}
+			catch (Exception ex)
+			{
+				Assert.AreEqual("Parameter, initVector, must be 16 characters", ex.Message);
+				throw;
+			}
 		}
 
 		[TestMethod]
@@ -76,57 +94,41 @@ namespace Tests
 		}
 
 		[TestMethod]
-		public void Constructor_Rijndael_Same_Key_IV()
+		public void EncryptDecryptString_AppendIV()
 		{
-			var sut1 = new Symmetric(symmetricKey);
-			var sut2 = new Symmetric(symmetricKey);
-			CollectionAssert.AreEqual(sut1.Key, sut2.Key);
-			CollectionAssert.AreEqual(sut1.IV, sut2.IV);
-		}
-
-		[ExpectedException(typeof(ArgumentException))]
-		[TestMethod]
-		public void GenerateKey_Invalid_IV_Throws_exception()
-		{
-			try
-			{
-				Symmetric.GenerateKey(Token.Create(10), Token.Create(4), Token.Create(15));
-			}
-			catch (Exception ex)
-			{
-				Assert.AreEqual("Parameter, initVector, must be 16 characters", ex.Message);
-				throw;
-			}
+			var symmetric = new Symmetric(key);
+			var cipher = symmetric.Encrypt(plainText, iv);
+			var decryptedText = symmetric.Decrypt(cipher);
+			Assert.AreEqual(plainText, Symmetric.Deserialize<string>(decryptedText));
 		}
 
 		[TestMethod]
-		public void Constructor_KeyPair_AreEqual()
+		public void Decrypt_WithBase64CipherAndIV()
 		{
-			var sut = new Symmetric(symmetricKey);
-			var key = sut.Key;
-			var iv = sut.IV;
-			var keyPair = sut.KeyPair;
-
-			Assert.AreEqual(Convert.ToBase64String(key), keyPair.Key);
-			Assert.AreEqual(Convert.ToBase64String(iv), keyPair.IV);
-		}
-
-		[TestMethod]
-		public void EncryptDecryptString()
-		{
-			var symmetric = new Symmetric(symmetricKey);
-			var cypherText = symmetric.Encrypt(plainText);
-			var decryptedText = symmetric.Decrypt(Convert.ToBase64String(cypherText));
+			var symmetric = new Symmetric(key);
+			var cipher = symmetric.Encrypt(plainText, iv);
+			var decryptedText = symmetric.Decrypt(Convert.ToBase64String(cipher.EncryptedContent), iv);
 			Assert.AreEqual(plainText, decryptedText);
 		}
 
-		private static string EncryptDecrypt(Symmetric rijndael, string plainText)
+		[TestMethod]
+		[ExpectedException(typeof(ArgumentException))]
+		public void Decrypt_NoCipherIV()
 		{
-			byte[] cypher = rijndael.Encrypt(plainText);
-			byte[] decryptedBytes = rijndael.Decrypt(cypher);
-			return Symmetric.Deserialize<string>(decryptedBytes);
+			try
+			{
+				var symmetric = new Symmetric(key);
+				var cipher = symmetric.Encrypt(plainText, iv);
+				cipher.IV = null;
+				Assert.IsFalse(cipher.HasIV);
+				var decryptedText = symmetric.Decrypt(cipher);
+				Assert.AreEqual(plainText, decryptedText);
+			}
+			catch (Exception ex)
+			{
+				Assert.AreEqual("Initialization vector must be supplied", ex.Message);
+				throw;
+			}
 		}
-
-		private static string EncryptDecrypt(SymmetricKey key, string plainText) => EncryptDecrypt(new Symmetric(key), plainText);
 	}
 }
