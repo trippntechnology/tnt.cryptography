@@ -51,11 +51,15 @@ namespace Crypto
 			switch ((this[ACTION] as EnumArgument<ActionEnum>).Value)
 			{
 				case ActionEnum.ENCRYPT:
-				case ActionEnum.DECRYPT:
 					InputFileArg.IsRequired = true;
 					InputFileArg.MustExist = true;
 					KeyFileArg.IsRequired = true;
 					InitializationVector.IsRequired = true;
+					break;
+				case ActionEnum.DECRYPT:
+					InputFileArg.IsRequired = true;
+					InputFileArg.MustExist = true;
+					KeyFileArg.IsRequired = true;
 					break;
 				case ActionEnum.KEYGEN:
 					PasswordKeyArg.IsRequired = true;

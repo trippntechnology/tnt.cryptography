@@ -48,10 +48,15 @@ namespace Crypto
 		private static void Decrypt(Arguments args)
 		{
 			var key = File.ReadAllText(args.KeyFile);
-			var iv = Symmetric.GenerateIV(args.InitVector);
+			var encryptedText = File.ReadAllText(args.InputFile);
+			var cipher = new Cipher(Convert.FromBase64String(encryptedText));
+
+			if (!cipher.HasIV && args.InitVector == null) throw new ArgumentException("IV Required");
+
+			var iv = cipher.IV ?? Symmetric.GenerateIV(args.InitVector);
 			var symmetric = new Symmetric(key);
-			var cipher = File.ReadAllText(args.InputFile);
-			var plainText = symmetric.Decrypt(cipher, iv);
+			 var decryptedBytes = symmetric.Decrypt(cipher, iv);
+			var plainText = Symmetric.Deserialize<string>(decryptedBytes);
 			File.WriteAllText(args.OutputFile, plainText);
 		}
 	}
