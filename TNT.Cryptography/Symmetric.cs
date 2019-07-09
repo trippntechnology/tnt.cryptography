@@ -114,9 +114,10 @@ namespace TNT.Cryptography
 		public Cipher Encrypt(string unencryptedString, byte[] iv) => Encrypt(Serialize(unencryptedString), iv);
 
 		/// <summary>
-		/// Encrypts <see cref=""/> using Rijndael symmetric key algorithm
+		/// Encrypts <paramref name="plainBytes"/> using Rijndael symmetric key algorithm
 		/// </summary>
 		/// <param name="plainBytes">Unencrypted bytes to be encrypted.</param>
+		/// <param name="iv">Initialization vector</param>
 		/// <returns>A <see cref="Cipher"/> that represents the encrypted <paramref name="plainBytes"/></returns>
 		public Cipher Encrypt(byte[] plainBytes, byte[] iv)
 		{

@@ -11,7 +11,7 @@ namespace Tests
 	public class CipherTests
 	{
 		private static byte[] IV = Encoding.ASCII.GetBytes(Token.Create(16));
-		private static byte[] EncryptedContent = Encoding.ASCII.GetBytes(Token.Create(433));
+		private static readonly byte[] EncryptedContent = Encoding.ASCII.GetBytes(Token.Create(433));
 
 		//[ClassInitialize]
 		//public static void Initialize(TestContext tc)

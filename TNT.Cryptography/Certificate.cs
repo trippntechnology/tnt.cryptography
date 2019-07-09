@@ -361,12 +361,9 @@ namespace TNT.Cryptography
 			certGen.SetPublicKey(keyPair.Public);
 			certGen.SetSignatureAlgorithm(SIGNATURE_ALGORITHM);
 
-			if (extend != null)
-			{
-				extend(certGen, serialNumber);
-			}
+			extend?.Invoke(certGen, serialNumber);
 
-			Org.BouncyCastle.X509.X509Certificate bcCert = certGen.Generate(signingKey == null ? keyPair.Private : signingKey);
+			Org.BouncyCastle.X509.X509Certificate bcCert = certGen.Generate(signingKey ?? keyPair.Private);
 
 			X509Certificate2 dotNetCert = new X509Certificate2(bcCert.GetEncoded());
 
@@ -410,12 +407,13 @@ namespace TNT.Cryptography
 				certGen.CopyAndAddExtension(ext.Oid.Value, ext.Critical, bcCert);
 			}
 
-			Org.BouncyCastle.X509.X509Certificate bcNewCert = certGen.Generate(signingKey == null ? keyPair.Private : signingKey);
+			Org.BouncyCastle.X509.X509Certificate bcNewCert = certGen.Generate(signingKey ?? keyPair.Private);
 
-			X509Certificate2 dotNetCert = new X509Certificate2(bcNewCert.GetEncoded());
-
-			// Restore private key
-			dotNetCert.PrivateKey = certificate.PrivateKey;
+			X509Certificate2 dotNetCert = new X509Certificate2(bcNewCert.GetEncoded())
+			{
+				// Restore private key
+				PrivateKey = certificate.PrivateKey
+			};
 
 			return dotNetCert;
 		}
@@ -569,8 +567,10 @@ namespace TNT.Cryptography
 		public static RSACryptoServiceProvider TransformRSAPrivateKey(RsaPrivateCrtKeyParameters keyParams)
 		{
 			RSAParameters rsaParameters = DotNetUtilities.ToRSAParameters(keyParams);
-			CspParameters cspParameters = new CspParameters();
-			cspParameters.KeyContainerName = "MyKeyContainer";
+			CspParameters cspParameters = new CspParameters
+			{
+				KeyContainerName = "MyKeyContainer"
+			};
 			RSACryptoServiceProvider rsaKey = new RSACryptoServiceProvider(BIT_STRENGTH, cspParameters);
 			rsaKey.ImportParameters(rsaParameters);
 			return rsaKey;

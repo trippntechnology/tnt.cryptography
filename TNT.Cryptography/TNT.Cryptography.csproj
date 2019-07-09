@@ -3,12 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0-preview-37</Version>
+    <Version>2.0.1-preview-02</Version>
     <Product>TNT Cryptography Library</Product>
     <Company>Tripp'n Technology, LLC.</Company>
-    <Copyright>Copyright Tripp'n Technology, LLC. 2019</Copyright>
-    <AssemblyVersion>2.0.0.45</AssemblyVersion>
-    <FileVersion>2.0.0.45</FileVersion>
+    <Copyright>Copyright 2019 Tripp'n Technology, LLC.</Copyright>
+    <AssemblyVersion>2.0.1.2</AssemblyVersion>
+    <FileVersion>2.0.1.2</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

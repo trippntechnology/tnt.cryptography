@@ -9,9 +9,9 @@ namespace Tests
 	[TestClass]
 	public class SymmetricTests
 	{
-		string plainText = @"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean in est et ex facilisis tincidunt vitae in urna. Aenean sed dolor eget arcu varius rutrum. Proin eget justo placerat, porttitor turpis ac, scelerisque augue. Donec eget commodo nulla, vel mattis eros. Curabitur pretium eros sed commodo ultricies. Quisque cursus eget orci et cursus. In pellentesque imperdiet dolor, vel cursus neque dignissim quis.";
-		byte[] key = Symmetric.GenerateKey(Token.Create(10), Token.Create(4));
-		byte[] iv = Symmetric.GenerateIV(Token.Create(16));
+		readonly string plainText = @"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean in est et ex facilisis tincidunt vitae in urna. Aenean sed dolor eget arcu varius rutrum. Proin eget justo placerat, porttitor turpis ac, scelerisque augue. Donec eget commodo nulla, vel mattis eros. Curabitur pretium eros sed commodo ultricies. Quisque cursus eget orci et cursus. In pellentesque imperdiet dolor, vel cursus neque dignissim quis.";
+		readonly byte[] key = Symmetric.GenerateKey(Token.Create(10), Token.Create(4));
+		readonly byte[] iv = Symmetric.GenerateIV(Token.Create(16));
 
 		[TestMethod]
 		public void Constructor_WithByteArray()
