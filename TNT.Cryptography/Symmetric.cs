@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
@@ -14,6 +15,18 @@ namespace TNT.Cryptography
 	/// </summary>	
 	public class Symmetric
 	{
+		/// <summary>
+		/// Tag used before the encrypted text
+		/// </summary>
+		public const string BEGIN_TAG = "--- BEGIN ---";
+
+		/// <summary>
+		/// Tag used after the encrypted text
+		/// </summary>
+		public const string END_TAG = "--- END ---";
+
+		const int LINE_LENGTH = 80;
+
 		private RijndaelManaged Rijndael = null;
 
 		/// <summary>
@@ -234,6 +247,58 @@ namespace TNT.Cryptography
 			}
 
 			return obj;
+		}
+
+		/// <summary>
+		/// Adds the <see cref="BEGIN_TAG"/> and <see cref="END_TAG"/> and formats so that 
+		/// the longest line is <see cref="LINE_LENGTH"/>
+		/// </summary>
+		/// <param name="content">Content to format</param>
+		/// <returns><see cref="List{String}"/> with the content formatted</returns>
+		public static List<string> FormatWithTags(string content)
+		{
+			List<string> formatted = new List<string>();
+
+			if (string.IsNullOrWhiteSpace(content)) return formatted;
+
+			formatted.Add(BEGIN_TAG);
+
+			while (content.Length > 0)
+			{
+				string subString = string.Empty;
+				if (content.Length >= LINE_LENGTH)
+				{
+					subString = content.Substring(0, LINE_LENGTH);
+					content = content.Substring(LINE_LENGTH);
+				}
+				else
+				{
+					subString = content.Substring(0);
+					content = string.Empty;
+				}
+				formatted.Add(subString);
+			}
+
+			formatted.Add(END_TAG);
+
+			return formatted;
+		}
+
+		/// <summary>
+		/// Remove the tags and join all lines back into a single <see cref="String"/>
+		/// </summary>
+		/// <param name="lines">Lines to format</param>
+		/// <returns>Content unformatted</returns>
+		public static string RemoveTags(List<string> lines)
+		{
+			var beginIndex = lines.FindIndex(l => l == BEGIN_TAG);
+			var endIndex = lines.FindIndex(l => l == END_TAG);
+
+			if (beginIndex == -1 || endIndex == -1 || endIndex < beginIndex) throw new ArgumentException("Unexpected format");
+			if (beginIndex + 1 == endIndex) return string.Empty;
+
+			var content = lines.GetRange(beginIndex + 1, endIndex - beginIndex - 1);
+			return string.Join("", content);
 		}
 	}
 }

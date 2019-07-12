@@ -22,12 +22,16 @@ namespace Crypto
 		const string IV = "iv";
 		const string IV_DESCRIPTION = "Initialization vector. Must be 16 ASCII characters";
 
+		const string FORMAT = "f";
+		const string FORMAT_DESCRIPTION = "Format the encrypted output";
+
 		protected EnumArgument<ActionEnum> ActionArg => this[ACTION] as EnumArgument<ActionEnum>;
 		protected FileArgument OutputFileArg => this[OUTPUT] as FileArgument;
 		protected FileArgument InputFileArg => this[INPUT_FILE] as FileArgument;
 		protected FileArgument KeyFileArg => this[KEY_FILE] as FileArgument;
 		protected StringArgument PasswordKeyArg => this[PASSWORD] as StringArgument;
 		protected StringArgument InitializationVector => this[IV] as StringArgument;
+		protected FlagArgument FormatArg => this[FORMAT] as FlagArgument;
 
 		public ActionEnum Action => ActionArg.Value;
 		public string OutputFile => OutputFileArg.Value;
@@ -35,6 +39,7 @@ namespace Crypto
 		public string InputFile => InputFileArg.Value;
 		public string PasswordKey => PasswordKeyArg.Value;
 		public string InitVector => InitializationVector.Value;
+		public bool Format => FormatArg.Value;
 
 		public Arguments()
 		{
@@ -44,6 +49,7 @@ namespace Crypto
 			this.Add(new EnumArgument<ActionEnum>(ACTION, ACTION_DESCRIPTION, true));
 			this.Add(new StringArgument(PASSWORD, PASSWORD_DESCRIPTION));
 			this.Add(new StringArgument(IV, IV_DESCRIPTION));
+			this.Add(new FlagArgument(FORMAT, FORMAT_DESCRIPTION));
 		}
 
 		protected override void SetRequiredDependencies()

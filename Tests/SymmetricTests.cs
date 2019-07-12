@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using TNT.Cryptography;
 using TNT.Cryptography.Enumerations;
 using TNT.Utilities;
@@ -129,6 +130,161 @@ namespace Tests
 				Assert.AreEqual("Initialization vector must be supplied", ex.Message);
 				throw;
 			}
+		}
+
+		[TestMethod]
+		public void FormatWithTags_NullOrEmpty_EmptyList()
+		{
+			Assert.AreEqual(0, Symmetric.FormatWithTags(null).Count);
+		}
+
+		[TestMethod]
+		public void FormatWithTags_79Characters_SingleLine()
+		{
+			var line = Token.Create(79);
+			var result = Symmetric.FormatWithTags(line);
+			var expected = new List<string>()
+			{
+				Symmetric.BEGIN_TAG,
+				line,
+				Symmetric.END_TAG
+			};
+			CollectionAssert.AreEqual(expected, result);
+		}
+
+		[TestMethod]
+		public void FormatWithTags_80Characters_SingleLine()
+		{
+			var line = Token.Create(80);
+			var result = Symmetric.FormatWithTags(line);
+			var expected = new List<string>()
+			{
+				Symmetric.BEGIN_TAG,
+				line,
+				Symmetric.END_TAG
+			};
+			CollectionAssert.AreEqual(expected, result);
+		}
+
+		[TestMethod]
+		public void FormatWithTags_81Characters_SingleLine()
+		{
+			var line = Token.Create(81);
+			var result = Symmetric.FormatWithTags(line);
+			var expected = new List<string>()
+			{
+				Symmetric.BEGIN_TAG,
+				line.Substring(0,80),
+				line.Substring(80),
+				Symmetric.END_TAG
+			};
+			CollectionAssert.AreEqual(expected, result);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(ArgumentException))]
+		public void RemoveTags_NoTags()
+		{
+			try
+			{
+				var line1 = Token.Create(20);
+				var line2 = Token.Create(20);
+				var line3 = Token.Create(20);
+				var lines = new List<string>() { line1, line2, line3 };
+				var result = Symmetric.RemoveTags(lines);
+			}
+			catch (Exception ex)
+			{
+				Assert.AreEqual("Unexpected format", ex.Message);
+				throw;
+			}
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(ArgumentException))]
+		public void RemoveTags_BeginTagOnly()
+		{
+			try
+			{
+				var line1 = Token.Create(20);
+				var line2 = Token.Create(20);
+				var line3 = Token.Create(20);
+				var lines = new List<string>() { Symmetric.BEGIN_TAG, line1, line2, line3 };
+				var result = Symmetric.RemoveTags(lines);
+			}
+			catch (Exception ex)
+			{
+				Assert.AreEqual("Unexpected format", ex.Message);
+				throw;
+			}
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(ArgumentException))]
+		public void RemoveTags_EndTagOnly()
+		{
+			try
+			{
+				var line1 = Token.Create(20);
+				var line2 = Token.Create(20);
+				var line3 = Token.Create(20);
+				var lines = new List<string>() { line1, line2, line3, Symmetric.END_TAG };
+				var result = Symmetric.RemoveTags(lines);
+			}
+			catch (Exception ex)
+			{
+				Assert.AreEqual("Unexpected format", ex.Message);
+				throw;
+			}
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(ArgumentException))]
+		public void RemoveTags_EndBeforeBegin()
+		{
+			try
+			{
+				var lines = new List<string>() { Symmetric.END_TAG, Symmetric.BEGIN_TAG };
+				var result = Symmetric.RemoveTags(lines);
+			}
+			catch (Exception ex)
+			{
+				Assert.AreEqual("Unexpected format", ex.Message);
+				throw;
+			}
+		}
+
+		[TestMethod]
+		public void RemoveTags_NoContent()
+		{
+			var lines = new List<string>() { Symmetric.BEGIN_TAG, Symmetric.END_TAG };
+			var result = Symmetric.RemoveTags(lines);
+			Assert.AreEqual(string.Empty, result);
+		}
+
+
+		[TestMethod]
+		public void RemoveTags_Joins()
+		{
+			var line1 = Token.Create(20);
+			var line2 = Token.Create(20);
+			var line3 = Token.Create(20);
+			var lines = new List<string>() { Symmetric.BEGIN_TAG, line1, line2, line3, Symmetric.END_TAG };
+
+			var result = Symmetric.RemoveTags(lines);
+			Assert.AreEqual(string.Concat(line1, line2, line3), result);
+		}
+
+		[TestMethod]
+		public void RemoveTags_RemoveLeadingTrailingNoise()
+		{
+			var line1 = Token.Create(20);
+			var line2 = Token.Create(20);
+			var line3 = Token.Create(20);
+			var lines = new List<string>() { Token.Create(20), Symmetric.BEGIN_TAG, line1, line2, line3, Symmetric.END_TAG, Token.Create(20) };
+
+			var result = Symmetric.RemoveTags(lines);
+			Assert.AreEqual(string.Concat(line1, line2, line3), result);
 		}
 	}
 }
