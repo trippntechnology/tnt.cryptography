@@ -32,7 +32,7 @@ namespace Crypto
 
 		private static void KeyGen(Arguments args)
 		{
-			var key = Symmetric.GenerateKey(args.PasswordKey, Token.Create(4));
+			var key = Symmetric.GenerateKey(args.PasswordKey, args.Salt);
 			var fileText = Convert.ToBase64String(key);
 			File.WriteAllText(args.OutputFile, fileText);
 		}

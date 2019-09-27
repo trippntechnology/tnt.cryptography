@@ -1,4 +1,5 @@
 ﻿using TNT.ArgumentParser;
+using TNT.Utilities;
 
 namespace Crypto
 {
@@ -25,6 +26,9 @@ namespace Crypto
 		const string FORMAT = "f";
 		const string FORMAT_DESCRIPTION = "Format the encrypted output";
 
+		const string SALT = "s";
+		const string SALT_DESCRIPTION = "Salt applied to the key";
+
 		protected EnumArgument<ActionEnum> ActionArg => this[ACTION] as EnumArgument<ActionEnum>;
 		protected FileArgument OutputFileArg => this[OUTPUT] as FileArgument;
 		protected FileArgument InputFileArg => this[INPUT_FILE] as FileArgument;
@@ -32,6 +36,7 @@ namespace Crypto
 		protected StringArgument PasswordKeyArg => this[PASSWORD] as StringArgument;
 		protected StringArgument InitializationVector => this[IV] as StringArgument;
 		protected FlagArgument FormatArg => this[FORMAT] as FlagArgument;
+		protected StringArgument SaltArg => this[SALT] as StringArgument;
 
 		public ActionEnum Action => ActionArg.Value;
 		public string OutputFile => OutputFileArg.Value;
@@ -40,6 +45,7 @@ namespace Crypto
 		public string PasswordKey => PasswordKeyArg.Value;
 		public string InitVector => InitializationVector.Value;
 		public bool Format => FormatArg.Value;
+		public string Salt => SaltArg.Value;
 
 		public Arguments()
 		{
@@ -50,6 +56,7 @@ namespace Crypto
 			this.Add(new StringArgument(PASSWORD, PASSWORD_DESCRIPTION));
 			this.Add(new StringArgument(IV, IV_DESCRIPTION));
 			this.Add(new FlagArgument(FORMAT, FORMAT_DESCRIPTION));
+			this.Add(new StringArgument(SALT, SALT_DESCRIPTION, defaultValue: string.Empty));
 		}
 
 		protected override void SetRequiredDependencies()
