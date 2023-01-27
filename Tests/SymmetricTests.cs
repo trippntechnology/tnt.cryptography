@@ -1,12 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using TNT.Cryptography;
 using TNT.Cryptography.Enumerations;
 using TNT.Utilities;
 
 namespace Tests
 {
+	[ExcludeFromCodeCoverage]
 	[TestClass]
 	public class SymmetricTests
 	{
@@ -86,29 +86,24 @@ namespace Tests
 		}
 
 		[TestMethod]
-		public void SerializeDeserialize()
+		public void EncryptDecrypt()
 		{
-			byte[] serializedBytes = Symmetric.Serialize(plainText);
-			string deserializedValue = Symmetric.Deserialize<string>(serializedBytes);
-
-			Assert.AreEqual(plainText, deserializedValue);
+			var symmetric = new Symmetric(key);
+			var plainBytes = Encoding.UTF8.GetBytes(plainText);
+			var encryptBytes = symmetric.Encrypt(plainBytes, iv);
+			var decryptedBytes = symmetric.Decrypt(encryptBytes, iv);
+			var decryptedText = Encoding.UTF8.GetString(decryptedBytes);
+			Assert.AreEqual(plainText, decryptedText);
 		}
 
 		[TestMethod]
-		public void EncryptDecryptString_AppendIV()
+		public void EncryptDecryptCipher()
 		{
 			var symmetric = new Symmetric(key);
-			var cipher = symmetric.Encrypt(plainText, iv);
-			var decryptedText = symmetric.Decrypt(cipher);
-			Assert.AreEqual(plainText, Symmetric.Deserialize<string>(decryptedText));
-		}
-
-		[TestMethod]
-		public void Decrypt_WithBase64CipherAndIV()
-		{
-			var symmetric = new Symmetric(key);
-			var cipher = symmetric.Encrypt(plainText, iv);
-			var decryptedText = symmetric.Decrypt(Convert.ToBase64String(cipher.EncryptedContent), iv);
+			var plainBytes = Encoding.UTF8.GetBytes(plainText);
+			var cipher= symmetric.EncryptToCipher(plainBytes, iv);
+			var decryptedBytes = symmetric.Decrypt(new Cipher(cipher.ToBytes()));
+			var decryptedText = Encoding.UTF8.GetString(decryptedBytes);
 			Assert.AreEqual(plainText, decryptedText);
 		}
 
@@ -119,11 +114,10 @@ namespace Tests
 			try
 			{
 				var symmetric = new Symmetric(key);
-				var cipher = symmetric.Encrypt(plainText, iv);
-				cipher.IV = null;
+				var plainTextBytes = Encoding.UTF8.GetBytes(plainText);
+				var cipher = new Cipher(plainTextBytes);
 				Assert.IsFalse(cipher.HasIV);
 				var decryptedText = symmetric.Decrypt(cipher);
-				Assert.AreEqual(plainText, decryptedText);
 			}
 			catch (Exception ex)
 			{
@@ -261,7 +255,6 @@ namespace Tests
 			var result = Symmetric.RemoveTags(lines);
 			Assert.AreEqual(string.Empty, result);
 		}
-
 
 		[TestMethod]
 		public void RemoveTags_Joins()

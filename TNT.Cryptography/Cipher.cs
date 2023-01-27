@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 
 namespace TNT.Cryptography
 {
@@ -22,12 +19,12 @@ namespace TNT.Cryptography
 		/// <summary>
 		/// IV of the cipher if exists
 		/// </summary>
-		public byte[] IV { get; set; }
+		public byte[]? IV { get; set; }
 
 		/// <summary>
 		/// The encrypted content of the cipher
 		/// </summary>
-		public byte[] EncryptedContent { get; private set; }
+		public byte[] EncryptedBytes { get; private set; }
 
 		/// <summary>
 		/// Initializes a <see cref="Cipher"/> with an array of <see cref="byte"/> that represent
@@ -63,8 +60,20 @@ namespace TNT.Cryptography
 				Array.Copy(encryptedArray, 0, cipherArray, 0, encryptedArray.Length);
 			}
 
-			EncryptedContent = encryptedArray;
+			EncryptedBytes = encryptedArray;
 		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="encryptedBytes"></param>
+		/// <param name="iv"></param>
+		public Cipher(byte[] encryptedBytes, byte[] iv) 
+		{
+			EncryptedBytes = encryptedBytes;
+			IV = iv;
+		}
+
 
 		/// <summary>
 		/// Converts a <see cref="Cipher"/> to an array of <see cref="byte"/>. If the <see cref="Cipher"/>
@@ -85,11 +94,12 @@ namespace TNT.Cryptography
 				var bytes = new List<byte>(Encoding.ASCII.GetBytes(IV_TAG));
 				bytes.AddRange(BitConverter.GetBytes(IV.Length));
 				bytes.AddRange(IV);
-				bytes.AddRange(EncryptedContent);
+				bytes.AddRange(EncryptedBytes);
 				return bytes.ToArray();
-			} else
+			}
+			else
 			{
-				return EncryptedContent;
+				return EncryptedBytes;
 			}
 		}
 	}

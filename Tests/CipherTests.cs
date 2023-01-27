@@ -1,12 +1,11 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using TNT.Cryptography;
 using TNT.Utilities;
 
 namespace Tests
 {
+	[ExcludeFromCodeCoverage]
 	[TestClass]
 	public class CipherTests
 	{
@@ -25,7 +24,7 @@ namespace Tests
 			var sut = new Cipher(EncryptedContent);
 			Assert.IsFalse(sut.HasIV);
 			Assert.IsNull(sut.IV);
-			CollectionAssert.AreEqual(EncryptedContent, sut.EncryptedContent);
+			CollectionAssert.AreEqual(EncryptedContent, sut.EncryptedBytes);
 		}
 
 		[TestMethod]
@@ -40,7 +39,7 @@ namespace Tests
 			Assert.IsTrue(sut.HasIV);
 			Assert.IsNotNull(sut.IV);
 			CollectionAssert.AreEqual(IV, sut.IV);
-			CollectionAssert.AreEqual(EncryptedContent, sut.EncryptedContent);
+			CollectionAssert.AreEqual(EncryptedContent, sut.EncryptedBytes);
 		}
 
 		[TestMethod]
@@ -48,7 +47,7 @@ namespace Tests
 		{
 			var sut = new Cipher(EncryptedContent);
 			var bytes = sut.ToBytes();
-			CollectionAssert.AreEqual(EncryptedContent, sut.EncryptedContent);
+			CollectionAssert.AreEqual(EncryptedContent, sut.EncryptedBytes);
 		}
 
 		[TestMethod]

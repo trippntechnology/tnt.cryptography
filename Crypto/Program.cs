@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.Text;
 using TNT.Cryptography;
-using TNT.Utilities;
 
 namespace Crypto
 {
@@ -11,6 +7,7 @@ namespace Crypto
 	{
 		static void Main(string[] args)
 		{
+			//System.Diagnostics.Debugger.Break();		
 			var arguments = new Arguments();
 
 			if (!arguments.Parse(args)) { return; }
@@ -43,8 +40,8 @@ namespace Crypto
 			var iv = Symmetric.GenerateIV(args.InitVector);
 			var symmetric = new Symmetric(Convert.FromBase64String(key));
 			var plainText = File.ReadAllText(args.InputFile);
-			var cipher = symmetric.Encrypt(plainText, iv);
-			var base64String = Convert.ToBase64String(cipher.ToBytes());
+			var cipher = symmetric.Encrypt(Encoding.UTF8.GetBytes(plainText), iv);
+			var base64String = Convert.ToBase64String(cipher);
 			if (args.Format)
 			{
 				File.WriteAllLines(args.OutputFile, Symmetric.FormatWithTags(base64String));
@@ -66,8 +63,9 @@ namespace Crypto
 
 			var iv = cipher.IV ?? Symmetric.GenerateIV(args.InitVector);
 			var symmetric = new Symmetric(key);
-			var decryptedBytes = symmetric.Decrypt(cipher, iv);
-			var plainText = Symmetric.Deserialize<string>(decryptedBytes);
+			cipher = new Cipher(cipher.EncryptedBytes, iv);
+			var decryptedBytes = symmetric.Decrypt(cipher);
+			var plainText = Encoding.UTF8.GetString(decryptedBytes);
 			File.WriteAllText(args.OutputFile, plainText);
 		}
 	}

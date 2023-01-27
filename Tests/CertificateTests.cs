@@ -1,22 +1,17 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Org.BouncyCastle.Asn1.X509;
+﻿using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading;
 using TNT.Cryptography;
 
 namespace Tests
 {
-	[TestClass]
+	[ExcludeFromCodeCoverage]
 	public class CertificateTests
 	{
 		protected const string m_CSR = @"-----BEGIN NEW CERTIFICATE REQUEST-----

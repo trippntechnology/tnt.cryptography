@@ -1,11 +1,11 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Xml.Linq;
 using TNT.Cryptography;
 
 namespace Tests
 {
+	[ExcludeFromCodeCoverage]
 	[TestClass]
 	public class AsymmetricTests
 	{
