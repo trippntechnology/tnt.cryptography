@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0-windows</TargetFramework>
+		<TargetFramework>net8.0-windows7.0</TargetFramework>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Version>3.0.0</Version>
 		<Authors>Tripp'n Technology, LLC.</Authors>
@@ -12,6 +12,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<IncludeSymbols>True</IncludeSymbols>
+		<Description>Cryptography Utilities</Description>
 		<Configurations>Debug;Release;Debug_Nuget_Local</Configurations>
 	</PropertyGroup>
 
