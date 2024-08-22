@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="TNT.ArgumentParser" Version="2.0.0" />
-    <PackageReference Include="TNT.Utilities" Version="2.1.0" />
+    <PackageReference Include="TNT.Utilities" Version="2.1.1" />
   </ItemGroup>
 
   <ItemGroup>
