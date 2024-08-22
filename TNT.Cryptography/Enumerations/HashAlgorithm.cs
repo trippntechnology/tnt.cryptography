@@ -1,19 +1,18 @@
 ﻿
-namespace TNT.Cryptography.Enumerations
-{
-	/// <summary>
-	/// Represents the hash algorithm
-	/// </summary>
-	public enum HashAlgorithm
-	{
-		/// <summary>
-		/// MD5 algorithm
-		/// </summary>
-		MD5,
+namespace TNT.Cryptography.Enumerations;
 
-		/// <summary>
-		/// SHA1 algorithm
-		/// </summary>
-		SHA1
-	}
+/// <summary>
+/// Represents the hash algorithm
+/// </summary>
+public enum HashAlgorithm
+{
+  /// <summary>
+  /// MD5 algorithm
+  /// </summary>
+  MD5,
+
+  /// <summary>
+  /// SHA1 algorithm
+  /// </summary>
+  SHA1
 }

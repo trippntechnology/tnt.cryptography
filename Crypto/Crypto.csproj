@@ -9,6 +9,7 @@
     <Authors>Tripp'n Technology, LLC.</Authors>
     <Description>Cryptography Utility</Description>
     <Copyright>Copyright 2023 $(Authors)</Copyright>
+    <Configurations>Debug;Release;Debug_Nuget_Local</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
