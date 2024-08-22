@@ -1,28 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0-windows7.0</TargetFramework>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Version>3.0.0</Version>
 		<Authors>Tripp'n Technology, LLC.</Authors>
-		<Product>TNT Cryptography Library</Product>
 		<Company>$(Authors)</Company>
-		<Copyright>Copyright 2019 $(Authors)</Copyright>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<IncludeSymbols>True</IncludeSymbols>
-		<Description>Cryptography Utilities</Description>
 		<Configurations>Debug;Release;Debug_Nuget_Local</Configurations>
+		<ContinuousIntegrationBuild>True</ContinuousIntegrationBuild>
+		<Copyright>Copyright 2019 $(Authors)</Copyright>
+		<DebugType>embedded</DebugType>
+		<Description>Cryptography Utilities</Description>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<IncludeSymbols>False</IncludeSymbols>
+		<Nullable>enable</Nullable>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
+		
+		<TargetFramework>net8.0-windows7.0</TargetFramework>
+		<Title>TNT Cryptography Library</Title>
+		<Version>3.0.0</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<None Include="docs\readme.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
 	<Target Name="DeplyNugetLocal" AfterTargets="Pack" Condition="$(Configuration) == 'Debug_Nuget_Local'">
 		<Exec Command="copy $(ProjectDir)bin\$(Configuration)\$(ProjectName).$(PackageVersion).nupkg D:\NugetRepo" />
-		<Exec Command="copy $(ProjectDir)bin\$(Configuration)\$(ProjectName).$(PackageVersion).symbols.nupkg D:\NugetRepo" />
 	</Target>
 
 </Project>
