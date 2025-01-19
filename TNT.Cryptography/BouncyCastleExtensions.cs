@@ -3,6 +3,7 @@ using Org.BouncyCastle.Pkcs;
 
 namespace TNT.Cryptography;
 
+/// <summary>
 /// Extensions for the Org.BouncyCastle library
 /// </summary>
 public static class BouncyCastleExtensions
@@ -12,7 +13,7 @@ public static class BouncyCastleExtensions
   /// </summary>
   /// <param name="csr"><see cref="Pkcs10CertificationRequest"/></param>
   /// <returns>Base 64 encoded string representing the <see cref="Pkcs10CertificationRequest"/></returns>
-  public static string ToBase64(this Pkcs10CertificationRequest csr)
+  public static string? ToBase64(this Pkcs10CertificationRequest csr)
   {
     using (StringWriter sw = new StringWriter())
     {
@@ -28,7 +29,7 @@ public static class BouncyCastleExtensions
   /// </summary>
   /// <param name="csr">String representing a base64 encoded <see cref="Pkcs10CertificationRequest"/></param>
   /// <returns><see cref="Pkcs10CertificationRequest"/></returns>
-  public static Pkcs10CertificationRequest ToPkcs10CertificationRequest(this string csr)
+  public static Pkcs10CertificationRequest? ToPkcs10CertificationRequest(this string csr)
   {
     using (TextReader tr = new StringReader(csr))
     {

@@ -9,6 +9,7 @@ namespace TNT.Cryptography;
 /// parameters to generate the keys, the keys are guaranteed to be the same. This was adapted 
 /// from code found at http://www.obviex.com/samples/Encryption.aspx.
 /// </summary>	
+[Obsolete("Use SymmetricCipher instead")]
 public class Symmetric
 {
   /// <summary>
@@ -72,6 +73,7 @@ public class Symmetric
   /// shorter keys. (Default: Bits256)
   /// </param>
   /// <returns><see cref="byte"/> array representing the key</returns>
+  [Obsolete("Use AsymmetricCipher")]
   public static byte[] GenerateKey(string password, string salt, Enumerations.HashAlgorithm hashAlgorithm = Enumerations.HashAlgorithm.SHA1,
                   int iterations = 2, Enumerations.KeySize keySize = Enumerations.KeySize.Bits256)
   {
@@ -97,6 +99,7 @@ public class Symmetric
   /// <returns><see cref="byte"/> array representing the IV</returns>
   /// <exception cref="ArgumentException">Thrown when <paramref name="enforceRijndael"/>is true and 
   /// <paramref name="initVector"/> is not 16 characters long</exception>
+  [Obsolete("Use AsymmetricCipher")]
   public static byte[] GenerateIV(string initVector, bool enforceRijndael = true)
   {
     if (initVector.Length != 16) throw new ArgumentException("Parameter, initVector, must be 16 characters");
@@ -109,6 +112,7 @@ public class Symmetric
   /// <param name="plainBytes"><see cref="byte"/> array to encrypt</param>
   /// <param name="iv">Initialization vector</param>
   /// <returns><see cref="Cipher"/> of <paramref name="plainBytes"/> and <paramref name="iv"/></returns>
+  [Obsolete("Use SymmetricCipher.Encrypt")]
   public Cipher EncryptToCipher(byte[] plainBytes, byte[] iv)
   {
     var encryptedBytes = Encrypt(plainBytes, iv);
@@ -119,6 +123,7 @@ public class Symmetric
   /// Encrypts <paramref name="plainBytes"/>
   /// </summary>
   /// <returns><see cref="byte"/> array representing an encrypted <paramref name="plainBytes"/></returns>
+  [Obsolete("Use SymmetricCipher.Encrypt")]
   public byte[] Encrypt(byte[] plainBytes, byte[] iv)
   {
     byte[] initializationVector = Encoding.ASCII.GetBytes("abcede0123456789");
@@ -148,6 +153,7 @@ public class Symmetric
   /// <param name="cipher"><see cref="Cipher"/> that contains the encrypted content</param>
   /// <returns>Decrypted <see cref="byte"/> array</returns>
   /// <exception cref="ArgumentException">Thrown <see cref="Cipher"/> does not contain IV</exception>
+  [Obsolete("Use SymmetricCipher.Decrypt")]
   public byte[] Decrypt(Cipher cipher)
   {
     byte[] plainBytes = cipher.EncryptedBytes;
@@ -164,6 +170,7 @@ public class Symmetric
   /// <param name="cipherBytes">Encrypted <see cref="byte"/> array</param>
   /// <param name="iv"><see cref="byte"/> array representing initialization vector</param>
   /// <returns>Decrypted <see cref="byte"/> array</returns>
+  [Obsolete("Use SymmetricCipher.Decrypt")]
   public byte[] Decrypt(byte[] cipherBytes, byte[] iv)
   {
     byte[] plainBytes;
@@ -191,6 +198,7 @@ public class Symmetric
   /// </summary>
   /// <param name="content">Content to format</param>
   /// <returns><see cref="List{String}"/> with the content formatted</returns>
+  [Obsolete("Use FormatUtils.FormatWithTags")]
   public static List<string> FormatWithTags(string content)
   {
     List<string> formatted = new List<string>();
@@ -225,6 +233,7 @@ public class Symmetric
   /// </summary>
   /// <param name="lines">Lines to format</param>
   /// <returns>Content unformatted</returns>
+  [Obsolete("Use FormatUtils.RemoveTags")]
   public static string RemoveTags(List<string> lines)
   {
     var beginIndex = lines.FindIndex(l => l == BEGIN_TAG);

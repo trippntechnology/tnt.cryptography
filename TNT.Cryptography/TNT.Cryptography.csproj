@@ -14,10 +14,9 @@
 		<IncludeSymbols>False</IncludeSymbols>
 		<Nullable>enable</Nullable>
 		<PackageReadmeFile>readme.md</PackageReadmeFile>
-		
-		<TargetFramework>net8.0-windows7.0</TargetFramework>
+		<TargetFramework>net9.0-windows</TargetFramework>
 		<Title>TNT Cryptography Library</Title>
-		<Version>3.0.0</Version>
+		<Version>3.0.1</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
