@@ -43,6 +43,18 @@ public class CipherAttributes
   }
 
   /// <summary>
+  /// Initializes <see cref="CipherAttributes"/> with <paramref name="key"/> and <paramref name="iv"/>
+  /// </summary>
+  /// <param name="key">Base64 encoded string that represent the <see cref="RawKey"/></param>
+  /// <param name="iv"><see cref="string"/> that is 16 characters long</param>
+  public CipherAttributes(string key, string iv)
+  {
+    if (iv.Length != 16) throw new ArgumentException("Initialization vector must be 16 characters long");
+    RawKey = Convert.FromBase64String(key);
+    RawIV = Encoding.ASCII.GetBytes(iv);
+  }
+
+  /// <summary>
   /// Serializes attributes (<seealso cref="CreateKey(string, int, int, HashAlgorithmName?, Enumerations.KeySize)"/>)
   /// </summary>
   /// <returns>Json string with cipher attributes</returns>
