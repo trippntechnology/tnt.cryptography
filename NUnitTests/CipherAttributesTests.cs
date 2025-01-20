@@ -8,7 +8,7 @@ namespace NUnitTests;
 public class CipherAttributesTests
 {
   [Test]
-  public void ConstructorTest()
+  public void ConstructorDefaultTest()
   {
     string password = "key value";
     CipherAttributes sut = new CipherAttributes(password);
@@ -33,6 +33,20 @@ public class CipherAttributesTests
     sut = new CipherAttributes(password, keySize: TNT.Cryptography.Enumerations.KeySize.Bits128);
     Assert.That(sut.Key, Is.Not.Null);
     Assert.That(sut.Key, Is.EqualTo("zicavw+MGi7sdGgx+8bvEg=="));
+  }
+
+  [Test]
+  public void ConstructorKeyIVTest()
+  {
+    byte[] rawKey = CipherAttributes.CreateKey("This is the password");
+    string key = Convert.ToBase64String(rawKey);
+    string iv = CipherAttributes.GenerateRandomString();
+
+    CipherAttributes sut = new CipherAttributes(key, iv);
+    Assert.That(sut.Key, Is.EqualTo(key));
+    Assert.That(sut.IV, Is.EqualTo(iv));
+
+    Assert.That(() => new CipherAttributes(key, "shortiv"), Throws.ArgumentException);
   }
 
   [Test]
