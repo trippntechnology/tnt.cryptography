@@ -21,15 +21,18 @@ Praesent nec nisl a purus blandit viverra. Class aptent taciti sociosqu ad litor
   [Test]
   public void TestEncryptionDecryption()
   {
+    string password = "this is the password";
     byte[] rawKey = CipherAttributes.CreateKey("this is the password");
     string key = Convert.ToBase64String(rawKey);
 
     Assert.That(key, Is.EqualTo("DQrgzgpovQxZDgORye9RtcNQA7PirOobuxYKv5KuCHQ="));
 
-    CipherAttributes cipherParams = new CipherAttributes(key);
+    CipherAttributes cipherParams = new CipherAttributes(password);
     SymmetricCipher symmetricCipher = new SymmetricCipher(cipherParams);
 
     var encryptedBytes = symmetricCipher.Encypt(Encoding.UTF8.GetBytes(PlainText));
+
+    symmetricCipher = new SymmetricCipher(new CipherAttributes(cipherParams.Key, cipherParams.IV));
     var decryptedBytes = symmetricCipher.Decrypt(encryptedBytes);
     var decryptedText = Encoding.UTF8.GetString(decryptedBytes);
 

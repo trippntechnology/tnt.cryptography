@@ -1,9 +1,9 @@
 ﻿namespace Crypto
 {
-	enum ActionEnum
-	{
-		ENCRYPT,
-		DECRYPT,
-		KEYGEN
-	}
+  enum ActionEnum
+  {
+    ENCRYPT,
+    DECRYPT,
+    GEN_CA,
+  }
 }

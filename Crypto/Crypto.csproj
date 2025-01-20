@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0-windows7.0</TargetFramework>
+    <Authors>Tripp'n Technology, LLC.</Authors>
+    <Configurations>Debug;Release;Debug_Nuget_Local</Configurations>
+    <Copyright>Copyright 2023 $(Authors)</Copyright>
+    <Description>Cryptography Utility</Description>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <Title>Crypto</Title>
-    <Authors>Tripp'n Technology, LLC.</Authors>
-    <Description>Cryptography Utility</Description>
-    <Copyright>Copyright 2023 $(Authors)</Copyright>
-    <Configurations>Debug;Release;Debug_Nuget_Local</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
