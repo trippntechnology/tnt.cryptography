@@ -31,6 +31,7 @@ namespace Crypto
     private static void GenCa(Arguments args)
     {
       CipherAttributes ca = new CipherAttributes(args.PasswordKey!);
+      Console.WriteLine($"ca.Key: {ca.Key}  ca.IV: {ca.IV}");
       var caJson = ca.ToString();
       File.WriteAllText(args.OutputFile!, caJson);
       Console.WriteLine($"Written to {args.OutputFile}");

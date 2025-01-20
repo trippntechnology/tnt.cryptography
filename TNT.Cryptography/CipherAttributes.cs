@@ -58,7 +58,11 @@ public class CipherAttributes
   /// Serializes attributes (<seealso cref="CreateKey(string, int, int, HashAlgorithmName?, Enumerations.KeySize)"/>)
   /// </summary>
   /// <returns>Json string with cipher attributes</returns>
-  public override string ToString() => JsonSerializer.Serialize(this);
+  public override string ToString()
+  {
+    var options = new JsonSerializerOptions() { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+    return JsonSerializer.Serialize(this, options);
+  }
 
 
   /// <summary>

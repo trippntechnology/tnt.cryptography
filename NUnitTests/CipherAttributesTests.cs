@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
+using System.Text.Json;
 using TNT.Cryptography;
 
 namespace NUnitTests;
@@ -87,5 +88,25 @@ public class CipherAttributesTests
     var value = sut.ToString();
     Console.WriteLine(value);
     Assert.That(value, Is.EqualTo(expected));
+  }
+
+  [Test]
+  public void TestSerialization()
+  {
+    string json = "{\"Key\": \"Jzk9veqSO9ZhYte+2C8erHTrSJNg0Wh0BqRtcJBxRtQ=\",\"IV\":\"DD7J27KHMiEDUnJD\"}";
+    CA? ca = JsonSerializer.Deserialize<CA>(json);
+
+    Assert.That(ca, Is.Not.Null);
+
+    var cipherAttrs = new CipherAttributes(ca.Key, ca.IV);
+
+    Assert.That(cipherAttrs.Key, Is.EqualTo(ca.Key));
+    Assert.That(cipherAttrs.IV, Is.EqualTo(ca.IV));
+  }
+
+  internal class CA
+  {
+    public string Key { get; set; } = string.Empty;
+    public string IV { get; set; } = string.Empty;
   }
 }
