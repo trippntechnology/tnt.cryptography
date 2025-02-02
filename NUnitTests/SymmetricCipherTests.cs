@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using TNT.Cryptography;
@@ -17,30 +16,59 @@ public class SymmetricCipherTests
   ""ServiceEndpoint"": ""https://tnt-service-eyhpfrebbdhvgwdt.westus-01.azurewebsites.net/""
 }";
 
+  private string EncryptedLines = @"--- BEGIN ---
+M8aypcHQl1W/Ogk3YZ3d+qfLL6yetm9zvrda+YmdNucGpgVV9wOy/zpn9Xc8i4Frqs7YTF0Qi+F5fKvG
+nwYXWezraeYdpp07a68hrUwQ64QLAOfd8ROKa0sY6lD48fRibcQ6ITkm6Wh0PLF/vglINdTH3Sg3hNF0
++u3IMz57R09wrr69NZ89IjuA2bFYZuLpIT/wkYZdcRcYSlV+xTauHlFNzfJSWMFdoJVZXSLcEYL1f/8k
+enL3ZPvPCT4O51SQnZYvsc2gmA4Ex79CSnyquYZYwMpnCNOgTl5kEJ1lMfml+TBpHwossshcs7gZGYjm
+0rHWyR6S28j2/gkow2SI0g==
+--- END ---
+";
+  private const string PASSWORD = "thepasswordfortheca";
+  private const string ENCODED_KEY = "Jzk9veqSO9ZhYte+2C8erHTrSJNg0Wh0BqRtcJBxRtQ=";
+  private const string IV = "NyO0AbiASbWOOOvm";
+  private string CipherAttributesJson = $"{{\"Key\":\"{ENCODED_KEY}\",\"IV\":\"{IV}\"}}";
+  private const string EXPECTED_CIPHER_ATTS_STRING = $"{{\"Key\":{{\"EncodedValue\":\"{ENCODED_KEY}\"}},\"IV\":{{\"Value\":\"{IV}\"}}}}";
+
+  [Test]
+  public void Test1()
+  {
+    var lines = EncryptedLines.Split("\r\n").ToList();
+    var encodedText = FormatUtils.RemoveTags(lines);
+    var expectedObject = JsonSerializer.Deserialize<TestObject>(PlainText);
+    var cipherKey = new CipherKey(ENCODED_KEY);
+    var iv = new InitializationVector(IV);
+    var cipherAttributes = new CipherAttributes(cipherKey, iv);
+    var cipher = new SymmetricCipher(cipherAttributes);
+    var foo = cipher.Decrypt(Convert.FromBase64String(encodedText));
+    var bar = Encoding.UTF8.GetString(foo);
+  }
+
   [Test]
   public void TestEncryptionDecryption()
   {
-    string password = "thepasswordfortheca";
-    byte[] rawKey = CipherAttributes.CreateKey(password);
-    string key = Convert.ToBase64String(rawKey);
+    var cipherKey = new CipherKey(PASSWORD, 0);
+    Assert.That(cipherKey.EncodedValue, Is.EqualTo(ENCODED_KEY));
+    var iv = new InitializationVector(IV);
 
-    Assert.That(key, Is.EqualTo("Jzk9veqSO9ZhYte+2C8erHTrSJNg0Wh0BqRtcJBxRtQ="));
+    CipherAttributes encryptCipherAttrs = new CipherAttributes(cipherKey, iv);
 
-    CipherAttributes encryptionCA = new CipherAttributes(password);
+    Assert.That(encryptCipherAttrs.Key.EncodedValue, Is.EqualTo(ENCODED_KEY));
+    Assert.That(encryptCipherAttrs.IV.Value, Is.EqualTo(IV));
 
-    Assert.That(encryptionCA.Key, Is.EqualTo("Jzk9veqSO9ZhYte+2C8erHTrSJNg0Wh0BqRtcJBxRtQ="));
-
-    SymmetricCipher encrytionCipher = new SymmetricCipher(encryptionCA);
-    var encryptedBytes = encrytionCipher.Encypt(Encoding.UTF8.GetBytes(PlainText));
+    SymmetricCipher encrytionCipher = new SymmetricCipher(encryptCipherAttrs);
+    var encryptedBytes = encrytionCipher.Encrypt(Encoding.UTF8.GetBytes(PlainText));
 
     var encryptedText = Convert.ToBase64String(encryptedBytes);
     var formattedEncryptedText = FormatUtils.FormatWithTags(encryptedText);
     File.WriteAllLines("TestEncryptionDecryption.txt", formattedEncryptedText);
 
-    CipherAttributes decryptionCA = new CipherAttributes(encryptionCA.Key, encryptionCA.IV);
 
-    Assert.That(decryptionCA.Key, Is.EqualTo(encryptionCA.Key));
-    Assert.That(decryptionCA.IV, Is.EqualTo(encryptionCA.IV));
+
+    CipherAttributes decryptionCA = new CipherAttributes(encryptCipherAttrs);
+
+    Assert.That(decryptionCA.Key.EncodedValue, Is.EqualTo(encryptCipherAttrs.Key.EncodedValue));
+    Assert.That(decryptionCA.IV.Value, Is.EqualTo(encryptCipherAttrs.IV.Value));
 
     SymmetricCipher decriptionCipher = new SymmetricCipher(decryptionCA);
     var decryptedBytes = decriptionCipher.Decrypt(encryptedBytes);
@@ -51,37 +79,17 @@ public class SymmetricCipherTests
   }
 
   [Test]
-  public void TestEncryptionDecryptionFile()
-  {
-    List<string> license = File.ReadAllLines("License.txt").ToList();
-    string encryptedLicense = license.Count > 1 ? FormatUtils.RemoveTags(license) : license[0];
-    byte[] encryptedBytes = Convert.FromBase64String(encryptedLicense);
-
-    var json = "{\"Key\":\"Jzk9veqSO9ZhYte+2C8erHTrSJNg0Wh0BqRtcJBxRtQ=\",\"IV\":\"DD7J27KHMiEDUnJD\"}";
-    var cipherAttrs = JsonSerializer.Deserialize<CipherAttributesTests.CA>(json);
-    if (cipherAttrs == null) return;
-
-    var cipherAttributes = new CipherAttributes(cipherAttrs.Key, cipherAttrs.IV);
-
-    var sameKey = cipherAttributes.Key == cipherAttrs.Key;
-    var sameIV = cipherAttributes.IV == cipherAttrs.IV;
-
-    var symmetricCipher = new SymmetricCipher(cipherAttributes);
-    var decryptedBytes = symmetricCipher.Decrypt(encryptedBytes);
-    string decryptedText = Encoding.UTF8.GetString(decryptedBytes);
-    Assert.That(decryptedText, Is.EqualTo(PlainText));
-  }
-
-  [Test]
-  public void EncryptionDecriptionProcess()
+  public void EncryptionDecryptionProcess()
   {
     var key = "Jzk9veqSO9ZhYte+2C8erHTrSJNg0Wh0BqRtcJBxRtQ=";
     var iv = "DD7J27KHMiEDUnJD";
     var _plainTextBytes = Encoding.UTF8.GetBytes(PlainText);
+    var cipherKey = new CipherKey(key);
+    var initializationVector = new InitializationVector(iv);
 
-    var _encryptCA = new CipherAttributes(key, iv);
+    var _encryptCA = new CipherAttributes(cipherKey, initializationVector);
     var _encryptCipher = new SymmetricCipher(_encryptCA);
-    var _encryptedBytes = _encryptCipher.Encypt(_plainTextBytes);
+    var _encryptedBytes = _encryptCipher.Encrypt(_plainTextBytes);
     var _encryptedBytesText = Convert.ToBase64String(_encryptedBytes);
     Assert.That(_encryptedBytesText, Is.EqualTo("M8aypcHQl1W/Ogk3YZ3d+qfLL6yetm9zvrda+YmdNucGpgVV9wOy/zpn9Xc8i4Frqs7YTF0Qi+F5fKvGnwYXWezraeYdpp07a68hrUwQ64QLAOfd8ROKa0sY6lD48fRibcQ6ITkm6Wh0PLF/vglINdTH3Sg3hNF0+u3IMz57R09wrr69NZ89IjuA2bFYZuLpIT/wkYZdcRcYSlV+xTauHlFNzfJSWMFdoJVZXSLcEYL1f/8kenL3ZPvPCT4O51SQnZYvsc2gmA4Ex79CSnyquYZYwMpnCNOgTl5kEJ1lMfml+TBpHwossshcs7gZGYjm0rHWyR6S28j2/gkow2SI0g=="));
     var _formattedEncryptedBytesText = FormatUtils.FormatWithTags(_encryptedBytesText);
@@ -93,7 +101,7 @@ public class SymmetricCipherTests
     Assert.That(encryptedBytesText_, Is.EqualTo(_encryptedBytesText));
     var encryptedBytes_ = Convert.FromBase64String(_encryptedBytesText);
     Assert.That(encryptedBytes_, Is.EqualTo(_encryptedBytes));
-    var decryptCA = new CipherAttributes(key, iv);
+    var decryptCA = new CipherAttributes(cipherKey, initializationVector);
     var decryptCipher = new SymmetricCipher(decryptCA);
     var plainTextBytes_ = decryptCipher.Decrypt(encryptedBytes_);
     Assert.That(plainTextBytes_, Is.EqualTo(_plainTextBytes));

@@ -30,9 +30,11 @@ namespace Crypto
 
     private static void GenCa(Arguments args)
     {
-      CipherAttributes ca = new CipherAttributes(args.PasswordKey!);
-      Console.WriteLine($"ca.Key: {ca.Key}  ca.IV: {ca.IV}");
-      var caJson = ca.ToString();
+      var cipherKey = new CipherKey(args.PasswordKey!, 0);
+      var iv = new InitializationVector();
+      CipherAttributes cipherAttrs = new CipherAttributes(cipherKey, iv);
+      Console.WriteLine($"ca.Key: {cipherAttrs.Key.EncodedValue}  ca.IV: {cipherAttrs.IV.Value}");
+      var caJson = cipherAttrs.ToString();
       File.WriteAllText(args.OutputFile!, caJson);
       Console.WriteLine($"Written to {args.OutputFile}");
       Console.WriteLine(caJson);
@@ -41,14 +43,13 @@ namespace Crypto
     private static void Encrypt(Arguments args)
     {
       string caJson = File.ReadAllText(args.CAFile!);
-      CA? ca = JsonSerializer.Deserialize<CA>(caJson);
-      if (ca == null) return;
+      CipherAttributes? cipherAttrs = JsonSerializer.Deserialize<CipherAttributes>(caJson);
+      if (cipherAttrs == null) return;
 
-      CipherAttributes cipherAttrs = new CipherAttributes(ca.Key, ca.IV);
       SymmetricCipher cipher = new SymmetricCipher(cipherAttrs);
 
       string plainText = File.ReadAllText(args.InputFile!);
-      byte[] cipherText = cipher.Encypt(Encoding.UTF8.GetBytes(plainText));
+      byte[] cipherText = cipher.Encrypt(Encoding.UTF8.GetBytes(plainText));
       string base64String = Convert.ToBase64String(cipherText);
       if (args.Format)
       {
@@ -63,10 +64,9 @@ namespace Crypto
     private static void Decrypt(Arguments args)
     {
       string caJson = File.ReadAllText(args.CAFile!);
-      CA? ca = JsonSerializer.Deserialize<CA>(caJson);
-      if (ca == null) return;
+      CipherAttributes? cipherAttrs = JsonSerializer.Deserialize<CipherAttributes>(caJson);
+      if (cipherAttrs == null) return;
 
-      CipherAttributes cipherAttrs = new CipherAttributes(ca.Key, ca.IV);
       SymmetricCipher cipher = new SymmetricCipher(cipherAttrs);
 
       List<string> lines = File.ReadAllLines(args.InputFile!).ToList();

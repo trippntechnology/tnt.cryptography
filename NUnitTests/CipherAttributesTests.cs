@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography;
 using System.Text.Json;
 using TNT.Cryptography;
 
@@ -8,105 +7,51 @@ namespace NUnitTests;
 [ExcludeFromCodeCoverage]
 public class CipherAttributesTests
 {
-  [Test]
-  public void ConstructorDefaultTest()
-  {
-    string password = "key value";
-    CipherAttributes sut = new CipherAttributes(password);
-    var rgbKey = CipherAttributes.CreateKey(password);
-    var key = Convert.ToBase64String(rgbKey);
-    Assert.That(sut.Key, Is.Not.Null);
-    Assert.That(sut.Key, Is.EqualTo("zicavw+MGi7sdGgx+8bvEvpn1H/QaaAxxxxUqRR/0LE="));
-    Assert.That(sut.IV.Length, Is.EqualTo(16));
-
-    sut = new CipherAttributes(password, 7);
-    Assert.That(sut.Key, Is.Not.Null);
-    Assert.That(sut.Key, Is.Not.EqualTo("zicavw+MGi7sdGgx+8bvEvpn1H/QaaAxxxxUqRR/0LE="));
-
-    sut = new CipherAttributes(password, iterations: 11);
-    Assert.That(sut.Key, Is.Not.Null);
-    Assert.That(sut.Key, Is.EqualTo("mfn6i0xTwCDoSxZrc3I0WUstJ6Vf5eLNNIqRK0T1pOg="));
-
-    sut = new CipherAttributes(password, hashAlgorithmName: HashAlgorithmName.SHA256);
-    Assert.That(sut.Key, Is.Not.Null);
-    Assert.That(sut.Key, Is.EqualTo("mk0GWCj8YoyB1eBPWP6tAV6vBj+KpIn/YOdb5kauAcg="));
-
-    sut = new CipherAttributes(password, keySize: TNT.Cryptography.Enumerations.KeySize.Bits128);
-    Assert.That(sut.Key, Is.Not.Null);
-    Assert.That(sut.Key, Is.EqualTo("zicavw+MGi7sdGgx+8bvEg=="));
-  }
+  private const string PASSWORD = "thisisthepasswordusedinthetest";
+  private const string ENCODED_KEY = "U4UAdDUUSeVEP3a361krforOlA9TpyYbeVV0NT8nd34=";
+  private const string IV = "FKwQqFFFP2bQqoE1";
+  private const string EXPECTED_CIPHER_ATTS_STRING = $"{{\"Key\":{{\"EncodedValue\":\"{ENCODED_KEY}\"}},\"IV\":{{\"Value\":\"{IV}\"}}}}";
 
   [Test]
-  public void ConstructorKeyIVTest()
+  public void CopyConstructorTest()
   {
-    byte[] rawKey = CipherAttributes.CreateKey("This is the password");
-    string key = Convert.ToBase64String(rawKey);
-    string iv = CipherAttributes.GenerateRandomString();
+    var cipherAttr = new CipherAttributes(new CipherKey(ENCODED_KEY), new InitializationVector(IV));
+    var sut = new CipherAttributes(cipherAttr);
+    Assert.That(sut.Key.EncodedValue, Is.EqualTo(cipherAttr.Key.EncodedValue));
+    Assert.That(sut.IV.Value, Is.EqualTo(cipherAttr.IV.Value));
 
-    CipherAttributes sut = new CipherAttributes(key, iv);
-    Assert.That(sut.Key, Is.EqualTo(key));
-    Assert.That(sut.IV, Is.EqualTo(iv));
-
-    Assert.That(() => new CipherAttributes(key, "shortiv"), Throws.ArgumentException);
+    Assert.That(sut.Key.ByteValue, Is.Not.EqualTo(new byte[0]));
+    Assert.That(sut.Key.ByteValue, Is.EqualTo(cipherAttr.Key.ByteValue));
+    Assert.That(sut.IV.ByteValue, Is.Not.EqualTo(new byte[0]));
+    Assert.That(sut.IV.ByteValue, Is.EqualTo(cipherAttr.IV.ByteValue));
   }
 
-  [Test]
-  public void CreateKeyTest()
-  {
-    string password = "key value";
-    var rgbKey = CipherAttributes.CreateKey(password);
-    var key = Convert.ToBase64String(rgbKey);
-    Assert.That(key, Is.Not.Null);
-    Assert.That(key, Is.EqualTo("zicavw+MGi7sdGgx+8bvEvpn1H/QaaAxxxxUqRR/0LE="));
-
-    rgbKey = CipherAttributes.CreateKey(password, 7);
-    key = Convert.ToBase64String(rgbKey);
-    Assert.That(key, Is.Not.Null);
-    Assert.That(key, Is.Not.EqualTo("zicavw+MGi7sdGgx+8bvEvpn1H/QaaAxxxxUqRR/0LE="));
-
-    rgbKey = CipherAttributes.CreateKey(password, iterations: 11);
-    key = Convert.ToBase64String(rgbKey);
-    Assert.That(key, Is.Not.Null);
-    Assert.That(key, Is.EqualTo("mfn6i0xTwCDoSxZrc3I0WUstJ6Vf5eLNNIqRK0T1pOg="));
-
-    rgbKey = CipherAttributes.CreateKey(password, hashAlgorithmName: HashAlgorithmName.SHA256);
-    key = Convert.ToBase64String(rgbKey);
-    Assert.That(key, Is.Not.Null);
-    Assert.That(key, Is.EqualTo("mk0GWCj8YoyB1eBPWP6tAV6vBj+KpIn/YOdb5kauAcg="));
-
-    rgbKey = CipherAttributes.CreateKey(password, keySize: TNT.Cryptography.Enumerations.KeySize.Bits128);
-    key = Convert.ToBase64String(rgbKey);
-    Assert.That(key, Is.Not.Null);
-    Assert.That(key, Is.EqualTo("zicavw+MGi7sdGgx+8bvEg=="));
-  }
 
   [Test]
   public void ToStringTest()
   {
-    CipherAttributes sut = new CipherAttributes("password");
-    string expected = $"{{\"Key\":\"{sut.Key}\",\"IV\":\"{sut.IV}\"}}";
+    var cipherKey = new CipherKey(PASSWORD, 0);
+    var iv = new InitializationVector(IV);
+    CipherAttributes sut = new CipherAttributes(cipherKey, iv);
     var value = sut.ToString();
     Console.WriteLine(value);
-    Assert.That(value, Is.EqualTo(expected));
+    Assert.That(value, Is.EqualTo(EXPECTED_CIPHER_ATTS_STRING));
   }
 
   [Test]
   public void TestSerialization()
   {
-    string json = "{\"Key\": \"Jzk9veqSO9ZhYte+2C8erHTrSJNg0Wh0BqRtcJBxRtQ=\",\"IV\":\"DD7J27KHMiEDUnJD\"}";
-    CA? ca = JsonSerializer.Deserialize<CA>(json);
+    var expectCipherAttrs = new CipherAttributes(new CipherKey(ENCODED_KEY), new InitializationVector(IV));
+    string cipherAttrsString = $"{{\"Key\":{{\"EncodedValue\":\"{ENCODED_KEY}\"}},\"IV\":{{\"Value\":\"{IV}\"}}}}";
+    CipherAttributes? sut = JsonSerializer.Deserialize<CipherAttributes>(EXPECTED_CIPHER_ATTS_STRING);
+    Assert.That(sut, Is.Not.Null);
 
-    Assert.That(ca, Is.Not.Null);
+    Assert.That(sut.Key.EncodedValue, Is.EqualTo(expectCipherAttrs.Key.EncodedValue));
+    Assert.That(sut.IV.Value, Is.EqualTo(expectCipherAttrs.IV.Value));
 
-    var cipherAttrs = new CipherAttributes(ca.Key, ca.IV);
-
-    Assert.That(cipherAttrs.Key, Is.EqualTo(ca.Key));
-    Assert.That(cipherAttrs.IV, Is.EqualTo(ca.IV));
-  }
-
-  internal class CA
-  {
-    public string Key { get; set; } = string.Empty;
-    public string IV { get; set; } = string.Empty;
+    Assert.That(sut.Key.ByteValue, Is.Not.EqualTo(new byte[0]));
+    Assert.That(sut.Key.ByteValue, Is.EqualTo(expectCipherAttrs.Key.ByteValue));
+    Assert.That(sut.IV.ByteValue, Is.Not.EqualTo(new byte[0]));
+    Assert.That(sut.IV.ByteValue, Is.EqualTo(expectCipherAttrs.IV.ByteValue));
   }
 }

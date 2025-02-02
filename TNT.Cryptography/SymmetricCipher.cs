@@ -23,7 +23,7 @@ public class SymmetricCipher : BaseCipher
   {
     using (Aes aes = Aes.Create())
     {
-      var decryptor = aes.CreateDecryptor(CipherAttributes.RawKey, CipherAttributes.RawIV);
+      var decryptor = aes.CreateDecryptor(CipherAttributes.Key.ByteValue, CipherAttributes.IV.ByteValue);
       using (var memoryStream = new MemoryStream(encryptedBytes))
       {
         using (var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
@@ -46,7 +46,7 @@ public class SymmetricCipher : BaseCipher
   {
     using (Aes aes = Aes.Create())
     {
-      var symmetricEncryptor = aes.CreateEncryptor(CipherAttributes.RawKey, CipherAttributes.RawIV);
+      var symmetricEncryptor = aes.CreateEncryptor(CipherAttributes.Key.ByteValue, CipherAttributes.IV.ByteValue);
       using (var memoryStream = new MemoryStream())
       {
         using (var cryptoStream = new CryptoStream(memoryStream, symmetricEncryptor, CryptoStreamMode.Write))
