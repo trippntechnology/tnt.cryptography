@@ -14,10 +14,10 @@ public class CipherKey
   public string EncodedValue { get; set; }
 
   /// <summary>
-  /// Byte array key
+  /// Byte array representing <see cref="EncodedValue"/>
   /// </summary>
   [JsonIgnore]
-  public byte[] ByteValue { get; }
+  public byte[] ByteValue => Convert.FromBase64String(EncodedValue);
 
   /// <summary>
   /// Default constructor used by deserialization
@@ -25,7 +25,6 @@ public class CipherKey
   public CipherKey()
   {
     EncodedValue = string.Empty;
-    ByteValue = new byte[0];
   }
 
   /// <summary>
@@ -35,7 +34,6 @@ public class CipherKey
   public CipherKey(string encodedKey)
   {
     EncodedValue = encodedKey;
-    ByteValue = Convert.FromBase64String(EncodedValue);
   }
 
   /// <summary>
@@ -44,8 +42,8 @@ public class CipherKey
   public CipherKey(string password, int saltSize = 0, int iterations = 2, HashAlgorithmName? hashAlgorithmName = null,
     Enumerations.KeySize keySize = Enumerations.KeySize.Bits256)
   {
-    ByteValue = CreateKey(password, saltSize, iterations, hashAlgorithmName, keySize);
-    EncodedValue = Convert.ToBase64String(ByteValue);
+    var bytes = CreateKey(password, saltSize, iterations, hashAlgorithmName, keySize);
+    EncodedValue = Convert.ToBase64String(bytes);
   }
 
   /// <summary>
