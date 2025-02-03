@@ -6,6 +6,7 @@ namespace TNT.Cryptography;
 /// Represents encrypted text that may have the IV included as the first part of the 
 /// cipher
 /// </summary>
+[Obsolete("Use a BaseCipher variant")]
 public class Cipher
 {
   private const string IV_TAG = "IV";

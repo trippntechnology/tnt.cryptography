@@ -17,12 +17,12 @@ public class Asymmetric
   /// <summary>
   /// The public key that is used to encrypt
   /// </summary>
-  public XDocument PublicKey { get; private set; }
+  public XDocument? PublicKey { get; private set; }
 
   /// <summary>
   /// The private key that is used to decrypt
   /// </summary>
-  public XDocument PrivateKey { get; private set; }
+  public XDocument? PrivateKey { get; private set; }
 
   /// <summary>
   /// Creates a <see cref="Asymmetric"/> class with the a generated public and private key pair if both 
@@ -32,7 +32,7 @@ public class Asymmetric
   /// </summary>
   /// <param name="publicKey">Encryption key</param>
   /// <param name="privateKey">Decryption key</param>
-  public Asymmetric(XDocument publicKey = null, XDocument privateKey = null)
+  public Asymmetric(XDocument? publicKey = null, XDocument? privateKey = null)
   {
     if (publicKey == null && privateKey == null)
     {

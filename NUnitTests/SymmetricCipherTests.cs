@@ -81,17 +81,15 @@ enL3ZPvPCT4O51SQnZYvsc2gmA4Ex79CSnyquYZYwMpnCNOgTl5kEJ1lMfml+TBpHwossshcs7gZGYjm
   [Test]
   public void EncryptionDecryptionProcess()
   {
-    var key = "Jzk9veqSO9ZhYte+2C8erHTrSJNg0Wh0BqRtcJBxRtQ=";
-    var iv = "DD7J27KHMiEDUnJD";
     var _plainTextBytes = Encoding.UTF8.GetBytes(PlainText);
-    var cipherKey = new CipherKey(key);
-    var initializationVector = new InitializationVector(iv);
+    var cipherKey = new CipherKey(ENCODED_KEY);
+    var initializationVector = new InitializationVector(IV);
 
     var _encryptCA = new CipherAttributes(cipherKey, initializationVector);
     var _encryptCipher = new SymmetricCipher(_encryptCA);
     var _encryptedBytes = _encryptCipher.Encrypt(_plainTextBytes);
     var _encryptedBytesText = Convert.ToBase64String(_encryptedBytes);
-    Assert.That(_encryptedBytesText, Is.EqualTo("M8aypcHQl1W/Ogk3YZ3d+qfLL6yetm9zvrda+YmdNucGpgVV9wOy/zpn9Xc8i4Frqs7YTF0Qi+F5fKvGnwYXWezraeYdpp07a68hrUwQ64QLAOfd8ROKa0sY6lD48fRibcQ6ITkm6Wh0PLF/vglINdTH3Sg3hNF0+u3IMz57R09wrr69NZ89IjuA2bFYZuLpIT/wkYZdcRcYSlV+xTauHlFNzfJSWMFdoJVZXSLcEYL1f/8kenL3ZPvPCT4O51SQnZYvsc2gmA4Ex79CSnyquYZYwMpnCNOgTl5kEJ1lMfml+TBpHwossshcs7gZGYjm0rHWyR6S28j2/gkow2SI0g=="));
+    Assert.That(_encryptedBytesText, Is.EqualTo("QXLBCZEpj8HbsJqwSzYiL6H7g+zfReBDnhLYYdIMC36dJCbe/nF49YaKynpcqhMj/5QHsZaSd9CcWvEZXSLrkZPPrTh+gmzRlX9df8/rWm9iSzb6/83tl2ZBSF+xDGemMfMDHUT52/WjvkLn2OgChlbGVX0MpY+iZz3KqAIbkJaWjw+NrbAIAKuFf9aKzyVa3Ti34kvCDgrOVLzkObEUOJfnszXR1qUqUY5+OBx4nIDavtdIwh3mY93F/me5oAky+cM4YVb58aKDsl3DfxexGVEsUU3GozUOT2kXYtqEMnG7KV8XGuPVsTYvz0AqJOcbFAozZabw+mfukyuBxbMA8w=="));
     var _formattedEncryptedBytesText = FormatUtils.FormatWithTags(_encryptedBytesText);
     File.WriteAllLines("test.txt", _formattedEncryptedBytesText);
 
@@ -107,5 +105,23 @@ enL3ZPvPCT4O51SQnZYvsc2gmA4Ex79CSnyquYZYwMpnCNOgTl5kEJ1lMfml+TBpHwossshcs7gZGYjm
     Assert.That(plainTextBytes_, Is.EqualTo(_plainTextBytes));
     var plainText = Encoding.UTF8.GetString(plainTextBytes_);
     Assert.That(plainText, Is.EqualTo(PlainText));
+  }
+
+  [Test]
+  public void EncryptDecryptObject()
+  {
+    var sut = JsonSerializer.Deserialize<TestObject>(PlainText);
+    Assert.That(sut, Is.Not.Null);
+
+    var cipher = new SymmetricCipher(new CipherAttributes(new CipherKey(ENCODED_KEY), new InitializationVector(IV)));
+    var encryptedSut = cipher.Encrypt(sut);
+    Assert.That(encryptedSut, Is.Not.Null);
+
+    var decryptedSut = cipher.Decrypt<TestObject>(encryptedSut);
+    Assert.That(decryptedSut, Is.Not.Null);
+    Assert.That(decryptedSut.ApplicationID, Is.EqualTo(sut.ApplicationID));
+    Assert.That(decryptedSut.LicenseID, Is.EqualTo(sut.LicenseID));
+    Assert.That(decryptedSut.Secret, Is.EqualTo(sut.Secret));
+    Assert.That(decryptedSut.ServiceEndpoint, Is.EqualTo(sut.ServiceEndpoint));
   }
 }

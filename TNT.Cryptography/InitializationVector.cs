@@ -8,6 +8,8 @@ namespace TNT.Cryptography;
 /// </summary>
 public class InitializationVector
 {
+  private static Random Random = new Random(DateTime.Now.Millisecond);
+
   /// <summary>
   /// Value
   /// </summary>
@@ -57,11 +59,10 @@ public class InitializationVector
     const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
     StringBuilder stringBuilder = new StringBuilder(length);
-    Random random = new Random(DateTime.Now.Millisecond);
 
     for (int i = 0; i < length; i++)
     {
-      char randomIndex = (char)random.Next(0, chars.Length);
+      char randomIndex = (char)Random.Next(0, chars.Length);
       stringBuilder.Append(chars[randomIndex]);
     }
 
