@@ -34,7 +34,6 @@ public class InitializationVector
   /// <param name="iv"></param>
   public InitializationVector(string iv)
   {
-    if (iv.Length != 16) throw new ArgumentException("Initialization vector must be 16 characters");
     Value = iv;
   }
 
@@ -44,7 +43,6 @@ public class InitializationVector
   /// <param name="byteValue"></param>
   public InitializationVector(byte[] byteValue)
   {
-    if (byteValue.Length != 16) throw new ArgumentException("Initialization vector must be 16 bytes");
     Value = Encoding.UTF8.GetString(byteValue);
   }
 

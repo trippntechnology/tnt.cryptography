@@ -10,16 +10,6 @@ public class InitializationVectorTests
   private const string IV = "ABCDEFGHIJKLMNOP";
 
   [Test]
-  public void InitializationVector_Invalid_Length()
-  {
-    Assert.That(() => { new InitializationVector("abcdefghijklmno"); }, Throws.ArgumentException);
-    Assert.That(() => { new InitializationVector("abcdefghijklmnopq"); }, Throws.ArgumentException);
-
-    Assert.That(() => { new InitializationVector(new byte[15]); }, Throws.ArgumentException);
-    Assert.That(() => { new InitializationVector(new byte[17]); }, Throws.ArgumentException);
-  }
-
-  [Test]
   public void InitializationVector_Constructor_Tests()
   {
     var sut = new InitializationVector(IV);
