@@ -16,7 +16,7 @@
 		<PackageReadmeFile>readme.md</PackageReadmeFile>
 		<TargetFramework>net9.0-windows</TargetFramework>
 		<Title>TNT Cryptography Library</Title>
-		<Version>3.0.3</Version>
+		<Version>3.0.4</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
