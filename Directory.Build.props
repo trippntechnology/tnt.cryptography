@@ -1,0 +1,13 @@
+<Project>
+
+	<PropertyGroup>
+		<Authors>$(Company)</Authors>
+		<Company>Tripp'n Technology, LLC.</Company>
+		<Copyright>Copyright 2026 $(Company)</Copyright>
+		<Configurations>Debug;Release;Debug_Nuget_Local</Configurations>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<TargetFramework>net10.0-windows</TargetFramework>
+	</PropertyGroup>
+
+</Project>

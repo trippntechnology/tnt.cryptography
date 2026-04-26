@@ -1,0 +1,23 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug_Nuget_Local" />
+    <BuildType Name="Release" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+  </Folder>
+  <Project Path="Crypto/Crypto.csproj">
+    <BuildType Solution="Debug_Nuget_Local|*" Project="Nuget_Debug_Local" />
+    <Build Solution="Debug_Nuget_Local|*" Project="false" />
+    <Build Solution="Release|*" Project="false" />
+  </Project>
+  <Project Path="NUnitTests/NUnitTests.csproj">
+    <BuildType Solution="Debug_Nuget_Local|*" Project="Debug" />
+  </Project>
+  <Project Path="Tests/Tests.csproj">
+    <Build Solution="Debug_Nuget_Local|*" Project="false" />
+    <Build Solution="Release|*" Project="false" />
+  </Project>
+  <Project Path="TNT.Cryptography/TNT.Cryptography.csproj" />
+</Solution>

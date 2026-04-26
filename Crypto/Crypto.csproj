@@ -1,20 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Authors>Tripp'n Technology, LLC.</Authors>
-    <Configurations>Debug;Release;Debug_Nuget_Local</Configurations>
-    <Copyright>Copyright 2023 $(Authors)</Copyright>
     <Description>Cryptography Utility</Description>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0-windows</TargetFramework>
     <Title>Crypto</Title>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="TNT.ArgumentParser" Version="2.0.0" />
-    <PackageReference Include="TNT.Utilities" Version="2.1.1" />
+    <PackageReference Include="TNT.Utilities" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
