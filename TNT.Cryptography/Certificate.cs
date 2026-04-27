@@ -12,7 +12,6 @@ using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
 using Org.BouncyCastle.X509.Extension;
 using System.Collections;
-using System.Net.Mail;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -38,147 +37,6 @@ public static class Certificate
   public static Pkcs10CertificationRequest CreateCertificationRequest(string subject, AsymmetricCipherKeyPair keyPair, Asn1Set asn1Set = null)
   {
     return new Pkcs10CertificationRequest(SIGNATURE_ALGORITHM, new X509Name(subject), keyPair.Public, asn1Set, keyPair.Private);
-  }
-
-  /// <summary>
-  /// Creates a certificate signed by a certificate authority
-  /// </summary>
-  /// <param name="subjectDN">Subject name of the new certificate</param>
-  /// <param name="effectiveDate">Start date certificate is valid</param>
-  /// <param name="expirationDate">Date when certificate expires</param>
-  /// <param name="crlUrls">List of <see cref="Uri"/> containing the Urls for the CRL Distribution Points</param>
-  /// <param name="certificateAuthority">Certificate authority signing the certificate</param>
-  /// <param name="keyUsages">List of <see cref="X509KeyUsageFlags"/> containing the X509KeyUsageFlags which define how the certificate key can be used. This parameter is optional, if null or nothing, then this certificate key can be used for both Digital Signature and Key Encipherment </param>
-  /// <returns>X509Certificate2 signed by a certificate authority</returns>
-  [Obsolete]
-  public static X509Certificate2 CreateSigned(string subjectDN, DateTime effectiveDate, DateTime expirationDate, List<Uri> crlUrls, X509Certificate2 certificateAuthority, List<X509KeyUsageFlags> keyUsages = null)
-  {
-    Org.BouncyCastle.X509.X509Certificate caCert = DotNetUtilities.FromX509Certificate(certificateAuthority);
-    AsymmetricCipherKeyPair keyPair = CreateRSAKeyPair();
-    X509Name x509SubjectDN = new X509Name(subjectDN);
-
-    X509Certificate2 rtnCert = CreateCertificate(x509SubjectDN, effectiveDate, expirationDate, keyPair, caCert.SubjectDN,
-                                                 TransformRSAPrivateKey((RSACryptoServiceProvider)certificateAuthority.PrivateKey), (certGen, serialNumber) =>
-      {
-        IList cn = x509SubjectDN.GetValueList(X509Name.CN);
-
-        if (cn.Count > 0)
-        {
-          if (Uri.CheckHostName(cn[0].ToString()) == UriHostNameType.Dns)
-          {
-            certGen.AddExtension(X509Extensions.SubjectAlternativeName, false, new GeneralNames(new GeneralName(GeneralName.DnsName, cn[0].ToString())));
-          }
-          else
-          {
-            try
-            {
-              MailAddress ma = new MailAddress(cn[0].ToString());
-              certGen.AddExtension(X509Extensions.SubjectAlternativeName, false, new GeneralNames(new GeneralName(GeneralName.Rfc822Name, cn[0].ToString())));
-            }
-            catch { }
-          }
-        }
-
-        KeyUsage ku = new KeyUsage(KeyUsage.DigitalSignature | KeyUsage.KeyEncipherment);
-        if (keyUsages != null && keyUsages.Count > 0)
-        {
-          if (!(keyUsages.Contains(X509KeyUsageFlags.DigitalSignature) &&
-            keyUsages.Contains(X509KeyUsageFlags.KeyEncipherment)))
-          {
-            if (keyUsages.Contains(X509KeyUsageFlags.DigitalSignature))
-              ku = new KeyUsage(KeyUsage.DigitalSignature);
-            else
-              ku = new KeyUsage(KeyUsage.KeyEncipherment);
-          }
-        }
-
-        certGen.AddExtension(X509Extensions.KeyUsage, true, ku);
-        certGen.AddExtension(X509Extensions.ExtendedKeyUsage, false, new ExtendedKeyUsage(KeyPurposeID.IdKPEmailProtection));
-        certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(caCert));
-        certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifierStructure(keyPair.Public));
-        certGen.AddExtension(X509Extensions.BasicConstraints, true, new BasicConstraints(false));
-        certGen.AddCrlDistributionPoints(crlUrls);
-      });
-
-    rtnCert.PrivateKey = TransformRSAPrivateKey((RsaPrivateCrtKeyParameters)keyPair.Private);
-
-    return rtnCert;
-  }
-
-  /// <summary>
-  /// Creates a self-signed certificate
-  /// </summary>
-  /// <param name="subjectDN">Subject name of the new certificate</param>
-  /// <param name="effectiveDate">Start date certificate is valid</param>
-  /// <param name="expirationDate">Date when certificate expires</param>
-  /// <returns>Self-signed X509Certificate2</returns>
-  [Obsolete]
-  public static X509Certificate2 CreateSelfSigned(string subjectDN, DateTime effectiveDate, DateTime expirationDate)
-  {
-    AsymmetricCipherKeyPair keyPair = CreateRSAKeyPair();
-
-    X509Certificate2 rtnCert = CreateCertificate(new X509Name(subjectDN), effectiveDate, expirationDate, keyPair, null, null, (certGen, serNum) =>
-      {
-        certGen.AddExtension(X509Extensions.ExtendedKeyUsage, false, new ExtendedKeyUsage(KeyPurposeID.IdKPEmailProtection));
-        certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, true, new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(keyPair.Public)));
-        certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifierStructure(keyPair.Public));
-      });
-
-    rtnCert.PrivateKey = TransformRSAPrivateKey((RsaPrivateCrtKeyParameters)keyPair.Private);
-
-    return rtnCert;
-  }
-
-  /// <summary>
-  /// Creates a self-signed Certificate Authority certificate
-  /// </summary>
-  /// <param name="subjectDN">Subject of the certificate</param>
-  /// <param name="effectiveDate">Effective date of the certificate</param>
-  /// <param name="expirationDate">Expirations date of the certificate</param>
-  /// <param name="crlUrls">List of <see cref="Uri"/> containing the Urls for the CRL Distribution Points</param>
-  /// <returns><see cref="X509Certificate2"/> representing a certificate authority</returns>
-  [Obsolete]
-  public static X509Certificate2 CreateCertificateAuthority(string subjectDN, DateTime effectiveDate, DateTime expirationDate, List<Uri> crlUrls = null)
-  {
-    return CreateCertificateAuthority(subjectDN, effectiveDate, expirationDate, crlUrls, null);
-  }
-
-  /// <summary>
-  /// Creates a signed certificate authority certificate
-  /// </summary>
-  /// <param name="subjectDN">Subject of the certificate</param>
-  /// <param name="effectiveDate">Effective date of the certificate</param>
-  /// <param name="expirationDate">Expirations date of the certificate</param>
-  /// <param name="crlUrls">List of <see cref="Uri"/> containing the Urls for the CRL Distribution Points</param>
-  /// <param name="certificateAuthority">Signing authority</param>
-  /// <returns><see cref="X509Certificate2"/> representing a certificate authority</returns>
-  [Obsolete]
-  public static X509Certificate2 CreateCertificateAuthority(string subjectDN, DateTime effectiveDate, DateTime expirationDate, List<Uri> crlUrls, X509Certificate2 certificateAuthority)
-  {
-    AsymmetricCipherKeyPair keyPair = CreateRSAKeyPair();
-    X509Name issuerDN = null;
-    RsaPrivateCrtKeyParameters signingKey = null;
-
-    if (certificateAuthority != null)
-    {
-      Org.BouncyCastle.X509.X509Certificate caCert = DotNetUtilities.FromX509Certificate(certificateAuthority);
-      issuerDN = caCert.SubjectDN;
-      signingKey = TransformRSAPrivateKey((RSACryptoServiceProvider)certificateAuthority.PrivateKey);
-    }
-
-    X509Certificate2 rtnCert = CreateCertificate(new X509Name(subjectDN), effectiveDate, expirationDate, keyPair, issuerDN, signingKey, (certGen, serNum) =>
-    {
-      GeneralNames names = new GeneralNames(new GeneralName(new X509Name(subjectDN)));
-
-      certGen.AddExtension(X509Extensions.KeyUsage, true, new KeyUsage(KeyUsage.CrlSign | KeyUsage.KeyCertSign));
-      certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(names, serNum));
-      certGen.AddExtension(X509Extensions.BasicConstraints, true, new BasicConstraints(true));
-      certGen.AddCrlDistributionPoints(crlUrls);
-    });
-
-    rtnCert.PrivateKey = TransformRSAPrivateKey((RsaPrivateCrtKeyParameters)keyPair.Private);
-
-    return rtnCert;
   }
 
   /// <summary>
@@ -211,7 +69,7 @@ public static class Certificate
 
     if (ca != null)
     {
-      keyParameter = TransformRSAPrivateKey((RSACryptoServiceProvider)ca.PrivateKey);
+      keyParameter = DotNetUtilities.GetKeyPair(ca.GetRSAPrivateKey()).Private;
     }
     else
     {
@@ -260,7 +118,10 @@ public static class Certificate
 
     Org.BouncyCastle.X509.X509Certificate bcCert = certGen.Generate(keyParameter);
 
-    X509Certificate2 certificate = new X509Certificate2(bcCert.GetEncoded()) { PrivateKey = TransformRSAPrivateKey((RsaPrivateCrtKeyParameters)keyPair.Private) };
+    RSAParameters rsaParams = DotNetUtilities.ToRSAParameters((RsaPrivateCrtKeyParameters)keyPair.Private);
+    RSA rsa = RSA.Create();
+    rsa.ImportParameters(rsaParams);
+    X509Certificate2 certificate = new X509Certificate2(bcCert.GetEncoded()).CopyWithPrivateKey(rsa);
 
     return certificate;
   }
@@ -284,7 +145,7 @@ public static class Certificate
       throw new InvalidParameterException("ca can not be null");
     }
 
-    keyParameter = TransformRSAPrivateKey((RSACryptoServiceProvider)ca.PrivateKey);
+    keyParameter = DotNetUtilities.GetKeyPair(ca.GetRSAPrivateKey()).Private;
 
     X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
 
@@ -325,49 +186,6 @@ public static class Certificate
   }
 
   /// <summary>
-  /// Creates a <see cref="X509Certificate2"/> certificate
-  /// </summary>
-  /// <param name="subjectDN">Subject of the certificate</param>
-  /// <param name="effectiveDate">Effective date of the certificate</param>
-  /// <param name="expirationDate">Expirations date of the certificate</param>
-  /// <param name="keyPair">Pair of keys used to create the certificate</param>
-  /// <param name="issuerDN">Issuer DN (default: <paramref name="subjectDN"/>)</param>
-  /// <param name="signingKey">Key used to sign certificate. When <paramref name="signingKey"/> is null, certificate is self-signed</param>
-  /// <param name="extend">Can be provided to add extensions to a <see cref="X509V3CertificateGenerator"/></param>
-  /// <returns><see cref="X509Certificate2"/> representing a certificate</returns>
-  [Obsolete]
-  public static X509Certificate2 CreateCertificate(X509Name subjectDN, DateTime effectiveDate, DateTime expirationDate, AsymmetricCipherKeyPair keyPair, X509Name issuerDN = null,
-    AsymmetricKeyParameter signingKey = null, Action<X509V3CertificateGenerator, BigInteger> extend = null)
-  {
-    if (issuerDN == null)
-    {
-      issuerDN = subjectDN;
-    }
-
-    X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
-    BigInteger serialNumber = CreateSerialNumber();
-
-    certGen.SetSerialNumber(serialNumber);
-    certGen.SetIssuerDN(issuerDN);
-
-    // Converted time to Universal Time so that the time set when calling Generate is the same as the time specified
-    certGen.SetNotBefore(effectiveDate.ToUniversalTime());
-    certGen.SetNotAfter(expirationDate.ToUniversalTime());
-
-    certGen.SetSubjectDN(subjectDN);
-    certGen.SetPublicKey(keyPair.Public);
-    certGen.SetSignatureAlgorithm(SIGNATURE_ALGORITHM);
-
-    extend?.Invoke(certGen, serialNumber);
-
-    Org.BouncyCastle.X509.X509Certificate bcCert = certGen.Generate(signingKey ?? keyPair.Private);
-
-    X509Certificate2 dotNetCert = new X509Certificate2(bcCert.GetEncoded());
-
-    return dotNetCert;
-  }
-
-  /// <summary>
   /// Renews a <see cref="X509Certificate2"/>. This keeps all but the serial number, effective date, and expiration date./>
   /// </summary>
   /// <param name="certificate">Certificate being renewed</param>
@@ -378,8 +196,8 @@ public static class Certificate
   public static X509Certificate2 Renew(X509Certificate2 certificate, DateTime effectiveDate, DateTime expirationDate,
                                        X509Certificate2 caCertificate)
   {
-    AsymmetricKeyParameter signingKey = caCertificate == null ? null : Certificate.TransformRSAPrivateKey((RSACryptoServiceProvider)caCertificate.PrivateKey);
-    var privateKeyParameter = TransformRSAPrivateKey((RSACryptoServiceProvider)certificate.PrivateKey);
+    AsymmetricKeyParameter signingKey = caCertificate == null ? null : DotNetUtilities.GetKeyPair(caCertificate.GetRSAPrivateKey()).Private;
+    var privateKeyParameter = DotNetUtilities.GetKeyPair(certificate.GetRSAPrivateKey()).Private;
     var bcCert = DotNetUtilities.FromX509Certificate(certificate);
     var publicKeyParameter = bcCert.GetPublicKey();
     AsymmetricCipherKeyPair keyPair = new AsymmetricCipherKeyPair(publicKeyParameter, privateKeyParameter);
@@ -406,11 +224,7 @@ public static class Certificate
 
     Org.BouncyCastle.X509.X509Certificate bcNewCert = certGen.Generate(signingKey ?? keyPair.Private);
 
-    X509Certificate2 dotNetCert = new X509Certificate2(bcNewCert.GetEncoded())
-    {
-      // Restore private key
-      PrivateKey = certificate.PrivateKey
-    };
+    X509Certificate2 dotNetCert = new X509Certificate2(bcNewCert.GetEncoded()).CopyWithPrivateKey(certificate.GetRSAPrivateKey());
 
     return dotNetCert;
   }

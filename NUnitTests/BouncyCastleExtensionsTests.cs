@@ -1,13 +1,12 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using TNT.Cryptography;
 
-namespace Tests
+namespace NUnitTests;
+
+[ExcludeFromCodeCoverage]
+public class BouncyCastleExtensionsTests
 {
-	[ExcludeFromCodeCoverage]
-	[TestClass]
-	public class BouncyCastleExtensionsTests
-	{
-		private const String base64Csr = @"-----BEGIN CERTIFICATE REQUEST-----
+    private const string base64Csr = @"-----BEGIN CERTIFICATE REQUEST-----
 MIIDXjCCAscCAQAwajELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAlV0MQwwCgYDVQQH
 DANTTEMxETAPBgNVBAoMCE1lZGljaXR5MRMwEQYDVQQLDApIZWFsdGhhZ2VuMRgw
 FgYDVQQDDA9kZXZlbG9wbWVudC5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJ
@@ -30,39 +29,38 @@ Mwo=
 -----END CERTIFICATE REQUEST-----
 ";
 
-		[TestMethod]
-		public void ToPkcs10CertificationRequest_Tests()
-		{
-			string? csr;
+    [Test]
+    public void ToPkcs10CertificationRequest_Tests()
+    {
+        string? csr;
 
-			using (var stream = File.OpenText("development.com.csr"))
-			{
-				csr = stream?.ReadToEnd();
-			}
+        using (var stream = File.OpenText("development.com.csr"))
+        {
+            csr = stream?.ReadToEnd();
+        }
 
-			Assert.IsNotNull(csr);
+        Assert.IsNotNull(csr);
 
-			var foo = csr.ToPkcs10CertificationRequest();
-			Assert.AreEqual("#03818100CA377439B50CF8276A6331371A69490375C32254273248EB860218A7BE3DDD358670AC928055D364EA85BD10DA5BD086268715E7FC8804B02947CBE2C6C048321ADA51A85C5184B7A4424DB23F7EE7B02BE230189DDFB0DBB83873D943E323A5499E4DD7D46F193A30FF0D0FC2ED6C65DB3ACF0FA426779B734771C92BFB330A",
-				foo.Signature.ToString());
-		}
+        var foo = csr.ToPkcs10CertificationRequest();
+        Assert.AreEqual("#03818100CA377439B50CF8276A6331371A69490375C32254273248EB860218A7BE3DDD358670AC928055D364EA85BD10DA5BD086268715E7FC8804B02947CBE2C6C048321ADA51A85C5184B7A4424DB23F7EE7B02BE230189DDFB0DBB83873D943E323A5499E4DD7D46F193A30FF0D0FC2ED6C65DB3ACF0FA426779B734771C92BFB330A",
+            foo.Signature.ToString());
+    }
 
-		[TestMethod]
-		public void ToBase64_Tests()
-		{
-			string? csr;
+    [Test]
+    public void ToBase64_Tests()
+    {
+        string? csr;
 
-			using (var stream = File.OpenText("development.com.csr"))
-			{
-				csr = stream?.ReadToEnd();
-			}
+        using (var stream = File.OpenText("development.com.csr"))
+        {
+            csr = stream?.ReadToEnd();
+        }
 
-			Assert.IsNotNull(csr);
+        Assert.IsNotNull(csr);
 
-			var pkcsCertReq = csr.ToPkcs10CertificationRequest();
-			var base64 = pkcsCertReq.ToBase64();
+        var pkcsCertReq = csr.ToPkcs10CertificationRequest();
+        var base64 = pkcsCertReq.ToBase64();
 
-			Assert.AreEqual(base64Csr, base64);
-		}
-	}
+        Assert.AreEqual(base64Csr, base64);
+    }
 }

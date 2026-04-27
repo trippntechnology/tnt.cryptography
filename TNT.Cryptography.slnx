@@ -15,9 +15,5 @@
   <Project Path="NUnitTests/NUnitTests.csproj">
     <BuildType Solution="Debug_Nuget_Local|*" Project="Debug" />
   </Project>
-  <Project Path="Tests/Tests.csproj">
-    <Build Solution="Debug_Nuget_Local|*" Project="false" />
-    <Build Solution="Release|*" Project="false" />
-  </Project>
   <Project Path="TNT.Cryptography/TNT.Cryptography.csproj" />
 </Solution>
