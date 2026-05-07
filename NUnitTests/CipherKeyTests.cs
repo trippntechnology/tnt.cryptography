@@ -40,4 +40,46 @@ public class CipherKeyTests
     sut = new CipherKey(PASSWORD, keySize: KEY_SIZE);
     Assert.That(sut.EncodedValue, Is.EqualTo("LawKjSG6g340ihcyQnG3kw=="));
   }
+
+  [Test]
+  public void CreateTest()
+  {
+    var result = CipherKey.Create(PASSWORD);
+    Assert.That(result, Is.Not.Null);
+    Assert.That(result.EncodedValue, Is.EqualTo(KEY));
+    Assert.That(result.ByteValue, Is.Not.Empty);
+  }
+
+  [Test]
+  public void CreateWithParametersTest()
+  {
+    var result = CipherKey.Create(PASSWORD, SALT, ITERATIONS, HASH_ALGORITHM, KEY_SIZE);
+    Assert.That(result, Is.Not.Null);
+    Assert.That(result.EncodedValue, Is.Not.Empty);
+    Assert.That(result.ByteValue, Is.Not.Empty);
+  }
+
+  [Test]
+  public void CreateWithDifferentIterationsTest()
+  {
+    var result = CipherKey.Create(PASSWORD, iterations: ITERATIONS);
+    Assert.That(result, Is.Not.Null);
+    Assert.That(result.EncodedValue, Is.EqualTo("XgSFY8j5GElKXt5i3KPuM9HttgGyi+5BsFBzJ98BX7o="));
+  }
+
+  [Test]
+  public void CreateWithDifferentHashAlgorithmTest()
+  {
+    var result = CipherKey.Create(PASSWORD, hashAlgorithmName: HASH_ALGORITHM);
+    Assert.That(result, Is.Not.Null);
+    Assert.That(result.EncodedValue, Is.EqualTo("N3MbXY+1J0PdE2wziq6W1EyiM9cEbjatFVkM29jd2zc="));
+  }
+
+  [Test]
+  public void CreateWithDifferentKeySizeTest()
+  {
+    var result = CipherKey.Create(PASSWORD, keySize: KEY_SIZE);
+    Assert.That(result, Is.Not.Null);
+    Assert.That(result.EncodedValue, Is.EqualTo("LawKjSG6g340ihcyQnG3kw=="));
+  }
 }

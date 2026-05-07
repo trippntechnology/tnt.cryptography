@@ -4,16 +4,16 @@ using System.Text.Json.Serialization;
 namespace TNT.Cryptography;
 
 /// <summary>
-/// 
+/// Represents an initialization vector (IV) used in cryptographic operations
 /// </summary>
-public class InitializationVector
+public class InitializationVector(string value = "")
 {
   private static Random Random = new Random(DateTime.Now.Millisecond);
 
   /// <summary>
   /// Value
   /// </summary>
-  public string Value { get; set; } = string.Empty;
+  public string Value { get; set; } = value;
 
   /// <summary>
   /// Byte array representing <see cref="Value"/>
@@ -24,26 +24,16 @@ public class InitializationVector
   /// <summary>
   /// Default constructor used by deserialization
   /// </summary>
-  public InitializationVector()
+  public InitializationVector() : this(string.Empty)
   {
   }
 
   /// <summary>
-  /// Initializes with initialization vector <see cref="string"/>
+  /// Initializes with byte array
   /// </summary>
-  /// <param name="iv"></param>
-  public InitializationVector(string iv)
+  /// <param name="byteValue">Byte array to be converted to a UTF-8 string</param>
+  public InitializationVector(byte[] byteValue) : this(Encoding.UTF8.GetString(byteValue))
   {
-    Value = iv;
-  }
-
-  /// <summary>
-  /// Initializes with byte array representing 16 bit initialization vector
-  /// </summary>
-  /// <param name="byteValue"></param>
-  public InitializationVector(byte[] byteValue)
-  {
-    Value = Encoding.UTF8.GetString(byteValue);
   }
 
   /// <summary>
@@ -65,5 +55,15 @@ public class InitializationVector
     }
 
     return stringBuilder.ToString();
+  }
+
+  /// <summary>
+  /// Creates a new <see cref="InitializationVector"/> with a randomly generated value
+  /// </summary>
+  /// <param name="length">Length of the random initialization vector string (Default: 16)</param>
+  /// <returns>A new <see cref="InitializationVector"/> instance with a randomly generated value</returns>
+  public static InitializationVector Create(int length = 16)
+  {
+    return new InitializationVector(GenerateRandomString(length));
   }
 }

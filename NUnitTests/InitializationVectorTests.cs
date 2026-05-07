@@ -30,4 +30,37 @@ public class InitializationVectorTests
     sut = InitializationVector.GenerateRandomString(7);
     Assert.That(sut.Length, Is.EqualTo(7));
   }
+
+  [Test]
+  public void CreateTest()
+  {
+    var result = InitializationVector.Create();
+    Assert.That(result, Is.Not.Null);
+    Assert.That(result.Value, Is.Not.Empty);
+    Assert.That(result.Value.Length, Is.EqualTo(16));
+    Assert.That(result.ByteValue, Is.Not.Empty);
+  }
+
+  [Test]
+  public void CreateWithCustomLengthTest()
+  {
+    var result = InitializationVector.Create(32);
+    Assert.That(result, Is.Not.Null);
+    Assert.That(result.Value.Length, Is.EqualTo(32));
+  }
+
+  [Test]
+  public void CreateGeneratesDifferentValuesTest()
+  {
+    var result1 = InitializationVector.Create();
+    var result2 = InitializationVector.Create();
+    Assert.That(result1.Value, Is.Not.EqualTo(result2.Value));
+  }
+
+  [Test]
+  public void CreateWithSmallLengthTest()
+  {
+    var result = InitializationVector.Create(1);
+    Assert.That(result.Value.Length, Is.EqualTo(1));
+  }
 }
