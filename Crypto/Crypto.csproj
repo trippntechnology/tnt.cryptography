@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="TNT.ArgumentParser" Version="2.0.0" />
-    <PackageReference Include="TNT.Utilities" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
